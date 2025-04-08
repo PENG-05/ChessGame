@@ -1144,7 +1144,7 @@
                 case 'cannon': // 炮
                     // 炮走法与车相似，但吃子时需要一个炮架
                     if (piece.x === x || piece.y === y) {
-                        // 检查路径上的棋子数
+                        // 计算路径上的棋子数
                         let pieceCount = 0;
                         
                         if (piece.x === x) {
@@ -1167,13 +1167,13 @@
                             }
                         }
                         
-                        // 如果目标位置是空的，需要没有棋子在路径上
+                        // 目标位置有棋子的情况：需要有且仅有一个炮架才能吃子
                         const targetPiece = pieces.find(p => p.x === x && p.y === y);
-                        if (!targetPiece) {
-                            return pieceCount === 0;
-                        } else {
-                            // 如果目标位置有棋子，需要有且只有一个炮架
+                        if (targetPiece) {
                             return pieceCount === 1;
+                        } else {
+                            // 目标位置无棋子：行走时不能有任何棋子阻挡
+                            return pieceCount === 0;
                         }
                     }
                     return false;
