@@ -69,6 +69,22 @@
             box-shadow: inset 0 0 5px rgba(0, 128, 0, 0.2);
         }
 
+        .cell.danger-zone {
+            background-color: rgba(255, 0, 0, 0.2) !important;
+            position: relative;
+        }
+
+        .cell.danger-zone::after {
+            content: "✗";
+            color: red;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
         .cell::before {
             content: attr(data-coord);
             position: absolute;
@@ -490,8 +506,11 @@
 
             renderPieces();
 
-            // 初始状态下计算最佳移动
-            setTimeout(calculateBestMoveForCar, 500);
+            // 初始状态下计算最佳移动和标记危险区域
+            setTimeout(() => {
+                calculateBestMoveForCar();
+                markDangerZones();
+            }, 500);
 
             // 为移动端添加触摸事件处理
             if (isMobileDevice) {
@@ -520,6 +539,7 @@
                 c.classList.remove('move-suggestion');
                 c.classList.remove('valid-drop');
                 c.classList.remove('invalid-drop');
+                // 保留危险区域标记
             });
 
             // 添加棋子 - 放回格子内
@@ -732,6 +752,56 @@
             return false;
         }
 
+        // 获取棋盘上所有危险的坐标点
+        function getDangerZones() {
+            const dangerZones = [];
+            const otherPieces = pieces.filter(p => p.type !== 'car');
+            
+            // 检查棋盘上每个坐标点
+            for (let x = 1; x <= 8; x++) {
+                for (let y = 1; y <= 9; y++) {
+                    // 如果当前位置有非车的棋子，跳过
+                    if (otherPieces.some(p => p.x === x && p.y === y)) {
+                        continue;
+                    }
+                    
+                    // 检查是否有任意棋子可以攻击到该坐标
+                    const isUnderAttack = otherPieces.some(piece => canPieceAttack(piece, x, y));
+                    
+                    if (isUnderAttack) {
+                        dangerZones.push({ x, y });
+                    }
+                }
+            }
+            
+            return dangerZones;
+        }
+
+        // 标记所有危险区域
+        function markDangerZones() {
+            // 清除所有危险区域标记
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.remove('danger-zone');
+            });
+            
+            // 获取所有危险区域
+            const dangerZones = getDangerZones();
+            
+            // 标记危险区域
+            dangerZones.forEach(zone => {
+                const cell = findCell(zone.x, zone.y);
+                if (cell) {
+                    cell.classList.add('danger-zone');
+                }
+            });
+            
+            // 更新游戏状态信息
+            const dangerCount = dangerZones.length;
+            if (dangerCount > 0) {
+                gameStatus.innerHTML = `游戏状态：已标记出 <strong>${dangerCount}</strong> 个危险坐标点，车移动到这些位置会被吃掉导致游戏结束。`;
+            }
+        }
+
         // 计算车的最佳移动
         function calculateBestMoveForCar() {
             // 获取车的当前位置
@@ -740,6 +810,9 @@
                 resultArea.innerHTML = `<h3>车的最佳移动</h3><p>未找到车，请确保棋盘上有车。</p>`;
                 return;
             }
+
+            // 标记危险区域
+            markDangerZones();
 
             // 获取车可能的安全移动
             const safeMoves = getSafeMovesForCar();
@@ -821,7 +894,7 @@
         function canPieceAttack(piece, x, y) {
             switch (piece.type) {
                 case 'pawn':
-                    // 卒只能向前走一步，没有进入对方半场的话不能横着走
+                    // 卒可以上下左右移动一步
                     return Math.abs(piece.x - x) + Math.abs(piece.y - y) === 1;
 
                 case 'rook':
@@ -846,14 +919,57 @@
                     return false;
 
                 case 'cannon':
-                    // 炮移动时同车，但攻击时需隔一子
-                    if (piece.x !== x && piece.y !== y) return false; // 必须直线
+                    // 炮必须在同一直线上
+                    if (piece.x !== x && piece.y !== y) return false;
 
-                    // 计算路径上的棋子数
-                    let pieceCount = countPiecesInPath(piece.x, piece.y, x, y);
+                    // 计算炮和目标位置之间的棋子数
+                    const pieceCount = countPiecesInPath(piece.x, piece.y, x, y);
 
-                    // 炮攻击时要有一个棋子作为炮架
-                    return pieceCount === 1 && pieces.some(p => p.x === x && p.y === y);
+                    // 如果炮和目标位置之间有一个棋子，且目标位置有棋子，则可以攻击
+                    if (pieceCount === 1 && pieces.some(p => p.x === x && p.y === y)) {
+                        return true;
+                    }
+                    
+                    // 如果炮和目标位置之间有一个棋子，且目标位置是空的，则标记为危险区域
+                    if (pieceCount === 1 && !pieces.some(p => p.x === x && p.y === y)) {
+                        return true;
+                    }
+                    
+                    return false;
+
+                case 'bishop': // 象
+                    // 象走田字格
+                    if (Math.abs(piece.x - x) === 2 && Math.abs(piece.y - y) === 2) {
+                        // 象眼位置
+                        const eyeX = (piece.x + x) / 2;
+                        const eyeY = (piece.y + y) / 2;
+                        
+                        // 检查象眼是否被塞象眼
+                        if (pieces.some(p => p.x === eyeX && p.y === eyeY)) {
+                            return false;
+                        }
+                        
+                        // 移除过河限制，只要是田字格走法即可
+                        return true;
+                    }
+                    return false;
+
+                case 'advisor': // 士
+                    // 士只能在九宫格内走，且一次只能走一个对角线格
+                    if (Math.abs(piece.x - x) === 1 && Math.abs(piece.y - y) === 1) {
+                        // 检查是否在九宫格内（假设中间3列，底部3行为九宫格）
+                        return x >= 4 && x <= 6 && y <= 3;
+                    }
+                    return false;
+
+                case 'king': // 将
+                    // 将只能在九宫格内走，且一次只能走一格（横向或纵向）
+                    if ((Math.abs(piece.x - x) === 1 && piece.y === y) ||
+                        (Math.abs(piece.y - y) === 1 && piece.x === x)) {
+                        // 检查是否在九宫格内
+                        return x >= 4 && x <= 6 && y <= 3;
+                    }
+                    return false;
 
                 default:
                     return false;
@@ -1634,6 +1750,24 @@
         });
 
         document.getElementById('loadGameList').addEventListener('click', loadGameList);
+
+        // 添加一个新按钮用于显示/隐藏危险区域
+        const buttonGroup = document.querySelector('.button-group');
+        const toggleDangerBtn = document.createElement('button');
+        toggleDangerBtn.className = 'btn';
+        toggleDangerBtn.id = 'toggleDangerZones';
+        toggleDangerBtn.textContent = '显示危险区域';
+        toggleDangerBtn.addEventListener('click', function() {
+            const cells = document.querySelectorAll('.cell.danger-zone');
+            if (cells.length > 0) {
+                cells.forEach(cell => cell.classList.remove('danger-zone'));
+                this.textContent = '显示危险区域';
+            } else {
+                markDangerZones();
+                this.textContent = '隐藏危险区域';
+            }
+        });
+        buttonGroup.appendChild(toggleDangerBtn);
 
         // 添加全局函数用于HTML中直接调用
         window.loadGame = loadGame;
