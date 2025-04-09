@@ -764,6 +764,14 @@
             // 如果是车，更新车的位置
             if (draggedPiece.type === 'car') {
                 carPosition = { x: targetX, y: targetY };
+                
+                // 检查车是否进入危险区域
+                if (isCarInDanger()) {
+                    gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
+                    setTimeout(() => {
+                        alert('车进入了敌方棋子的攻击范围，游戏结束！');
+                    }, 100);
+                }
             }
 
             renderPieces();
@@ -1264,24 +1272,23 @@
                             selectedPiece.y = y;
                             carPosition = { x, y };
 
+                            // 清除选择状态
+                            selectedPiece = null;
+
+                            // 重绘棋盘
+                            renderPieces();
+
                             // 检查游戏状态
                             if (isCarInDanger()) {
                                 gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
                                 setTimeout(() => {
                                     alert('车进入了敌方棋子的攻击范围，游戏结束！');
-                                    // initBoard();
                                 }, 100);
-                                selectedPiece = null;
-                                renderPieces();
                                 return;
                             }
 
                             // 移动成功提示
                             gameStatus.textContent = `车吃掉了 ${getPieceSymbol(piece.type)} 移动到 (${x}, ${y})`;
-
-                            // 移动完成，清除选择
-                            selectedPiece = null;
-                            renderPieces();
 
                             // 重新计算最佳移动
                             setTimeout(calculateBestMoveForCar, 500);
@@ -1296,7 +1303,43 @@
                         handleMobilePieceClick(piece);
                     }
                 } else if (selectedPiece) {
-                    // ...existing code for moving to empty cell...
+                    // 空单元格且有选中棋子，尝试移动
+                    if (selectedPiece.type === 'car') {
+                        // 检查是否可以移动到该位置
+                        if (isValidCarMove(selectedPiece.x, selectedPiece.y, x, y)) {
+                            // 移动车
+                            selectedPiece.x = x;
+                            selectedPiece.y = y;
+                            carPosition = { x, y };
+                            
+                            // 清除选择状态
+                            selectedPiece = null;
+                            
+                            // 重绘棋盘
+                            renderPieces();
+                            
+                            // 检查车是否安全
+                            if (isCarInDanger()) {
+                                gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
+                                setTimeout(() => {
+                                    alert('车进入了敌方棋子的攻击范围，游戏结束！');
+                                }, 100);
+                                return;
+                            }
+                            
+                            gameStatus.textContent = `车移动到坐标 (${x}, ${y})`;
+                            
+                            // 重新计算最佳移动
+                            setTimeout(calculateBestMoveForCar, 500);
+                            return;
+                        } else {
+                            gameStatus.textContent = "无法移动到该位置！车只能直线移动且不能越过其他棋子";
+                            return;
+                        }
+                    } else {
+                        // 其他棋子的移动逻辑...
+                        // 可以根据需要添加其他棋子的移动实现
+                    }
                 }
             } else {
                 // 桌面端原有逻辑
@@ -1309,7 +1352,7 @@
                 } else {
                     // 如果是空单元格，尝试移动车
                     const car = pieces.find(p => p.type === 'car');
-                    if (car) {
+                    if (car && isValidCarMove(car.x, car.y, x, y)) {
                         // 检查是否有棋子在目标位置
                         const targetPiece = pieces.find(p => p.x === x && p.y === y);
                         if (targetPiece) {
@@ -1391,17 +1434,17 @@
                 maybeMovePiece();
             }
 
+            // 重新渲染棋盘
+            renderPieces();
+
             // 检查游戏状态
             if (isCarInDanger()) {
                 gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
                 setTimeout(() => {
                     alert('车进入了敌方棋子的攻击范围，游戏结束！');
-                    // initBoard();
                 }, 100);
                 return;
             }
-
-            renderPieces();
         }
 
         // 在特定步数后添加新的随机棋子
@@ -1602,7 +1645,7 @@
                 return true;
             }
 
-            // 原有逻辑作为额外检查
+            // 检查每个棋子是否可以攻击到车
             return pieces.some(piece => {
                 if (piece.type === 'car') return false;
 
