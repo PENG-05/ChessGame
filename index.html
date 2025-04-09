@@ -362,6 +362,7 @@
         .pay-img {
             display: flex;
             justify-content: space-around;
+
             @media (max-width: 768px) {
                 flex-direction: column;
                 align-items: center;
@@ -1065,19 +1066,16 @@
                     return false;
 
                 case 'advisor': // 士
-                    // 士只能在九宫格内走，且一次只能走一个对角线格
+                    // 士一次只能走一个对角线格，不再限制在九宫格内
                     if (Math.abs(piece.x - x) === 1 && Math.abs(piece.y - y) === 1) {
-                        // 检查是否在九宫格内（假设中间3列，底部3行为九宫格）
-                        return x >= 4 && x <= 6 && y <= 3;
+                        return true; 
                     }
                     return false;
 
                 case 'king': // 将
-                    // 将只能在九宫格内走，且一次只能走一格（横向或纵向）
-                    if ((Math.abs(piece.x - x) === 1 && piece.y === y) ||
-                        (Math.abs(piece.y - y) === 1 && piece.x === x)) {
-                        // 检查是否在九宫格内
-                        return x >= 4 && x <= 6 && y <= 3;
+                    // 将可以上下左右走一格，不再限制在九宫格内
+                    if (Math.abs(piece.x - x) + Math.abs(piece.y - y) === 1) {
+                        return true; // 移除九宫格限制
                     }
                     return false;
 
@@ -1935,7 +1933,7 @@
             console.log("检测到移动设备，启用触摸控制");
         }
     </script>
-     <script>
+    <script>
         // 添加禁用F12和右键菜单的代码
         document.addEventListener('keydown', function (e) {
             // 禁用 F12
