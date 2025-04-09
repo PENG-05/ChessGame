@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,12 +13,14 @@
             padding: 10px;
             box-sizing: border-box;
         }
+
         @media (min-width: 768px) {
             body {
                 max-width: 800px;
                 padding: 20px;
             }
         }
+
         .board {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -27,13 +30,14 @@
             position: relative;
             background-color: #d8c1a0;
             border: 2px solid #8B4513;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             padding: 0;
             border-radius: 4px;
             width: 100%;
             max-width: 400px;
             aspect-ratio: 8/9;
         }
+
         .cell {
             width: 100%;
             height: 100%;
@@ -50,17 +54,21 @@
             padding: 0;
             touch-action: manipulation;
         }
+
         .cell:hover {
             background-color: #f7ebd3;
         }
+
         .cell.selected {
             background-color: #ffce9e;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
         }
+
         .cell.move-suggestion {
             background-color: #c6ecc6 !important;
-            box-shadow: inset 0 0 5px rgba(0,128,0,0.2);
+            box-shadow: inset 0 0 5px rgba(0, 128, 0, 0.2);
         }
+
         .cell::before {
             content: attr(data-coord);
             position: absolute;
@@ -69,6 +77,7 @@
             font-size: min(8px, 0.5em);
             color: #666;
         }
+
         .piece {
             width: 80%;
             height: 80%;
@@ -83,25 +92,37 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 2px 2px 3px rgba(0,0,0,0.3);
+            box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
             transition: transform 0.1s;
             touch-action: none;
         }
+
         .piece:active {
             cursor: grabbing;
             transform: scale(1.1);
         }
+
         .car {
             color: red;
             background-color: #ffdddd;
             border-color: red;
         }
-        .pawn, .rook, .knight, .cannon, .bishop, .advisor, .king {
+
+        .pawn,
+        .rook,
+        .knight,
+        .cannon,
+        .bishop,
+        .advisor,
+        .king {
             color: black;
             background-color: #ddffdd;
             border-color: black;
         }
-        .input-area, .result-area, .archive-area {
+
+        .input-area,
+        .result-area,
+        .archive-area {
             margin: 15px 0;
             padding: 15px;
             border: 1px solid #ddd;
@@ -110,9 +131,11 @@
             width: 100%;
             box-sizing: border-box;
         }
+
         .result-area {
             min-height: 50px;
         }
+
         .btn {
             padding: 10px 16px;
             background-color: #4CAF50;
@@ -125,32 +148,40 @@
             width: 100%;
             touch-action: manipulation;
         }
+
         .btn:hover {
             background-color: #45a049;
         }
+
         .btn-danger {
             background-color: #dc3545;
         }
+
         .btn-danger:hover {
             background-color: #c82333;
         }
+
         .btn-action {
             margin-right: 5px;
             margin-bottom: 5px;
         }
+
         .move-suggestion {
             background-color: #c6ecc6 !important;
         }
+
         .input-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 10px;
         }
+
         @media (min-width: 576px) {
             .input-grid {
                 grid-template-columns: 1fr 1fr;
             }
         }
+
         .move-car-area {
             margin: 20px 0;
             padding: 15px;
@@ -158,15 +189,19 @@
             border-radius: 5px;
             background-color: #f0f7ff;
         }
+
         .dragging {
             opacity: 0.6;
         }
+
         .valid-drop {
             background-color: rgba(0, 255, 0, 0.2);
         }
+
         .invalid-drop {
             background-color: rgba(255, 0, 0, 0.2);
         }
+
         .game-status {
             margin-top: 20px;
             padding: 10px;
@@ -174,25 +209,39 @@
             background-color: #f8f9fa;
             border-left: 4px solid #4CAF50;
         }
+
         .captured {
             animation: capture-animation 0.5s;
         }
+
         @keyframes capture-animation {
-            0% { background-color: #f5e9c9; }
-            50% { background-color: #ff6b6b; }
-            100% { background-color: #f5e9c9; }
+            0% {
+                background-color: #f5e9c9;
+            }
+
+            50% {
+                background-color: #ff6b6b;
+            }
+
+            100% {
+                background-color: #f5e9c9;
+            }
         }
+
         .delete-mode {
             background-color: #ffe6e6;
         }
+
         .delete-mode .cell:hover {
             background-color: #ffcccc;
             cursor: not-allowed;
         }
+
         .delete-mode .piece:hover {
             background-color: #ff9999;
             cursor: not-allowed;
         }
+
         .archive-list {
             margin-top: 10px;
             max-height: 200px;
@@ -201,6 +250,7 @@
             padding: 10px;
             border-radius: 4px;
         }
+
         .archive-item {
             display: flex;
             justify-content: space-between;
@@ -208,51 +258,63 @@
             border-bottom: 1px solid #eee;
             align-items: center;
         }
+
         .archive-item:hover {
             background-color: #f0f0f0;
         }
+
         .archive-item:last-child {
             border-bottom: none;
         }
+
         .archive-name {
             flex: 1;
             margin-right: 10px;
         }
+
         .btn-sm {
             padding: 4px 8px;
             font-size: 12px;
         }
+
         .end-page-text {
             font-size: 12px;
             color: red;
         }
-        input[type="number"], input[type="text"], select {
+
+        input[type="number"],
+        input[type="text"],
+        select {
             width: 100%;
             padding: 8px;
             margin: 5px 0;
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
-            font-size: 16px; /* 防止iOS上缩放 */
+            font-size: 16px;
+            /* 防止iOS上缩放 */
         }
+
         /* 移动端触摸优化 */
         .mobile-controls {
             display: none;
             margin-top: 15px;
             text-align: center;
         }
+
         @media (max-width: 768px) {
             .mobile-controls {
                 display: block;
             }
         }
+
         .mobile-info {
             margin-top: 10px;
             font-size: 14px;
             color: #666;
             text-align: center;
         }
-        
+
         /* 适配小屏幕的按钮组 */
         .button-group {
             display: flex;
@@ -260,9 +322,11 @@
             gap: 5px;
             margin: 10px 0;
         }
+
         .collapsible-section {
             margin-bottom: 15px;
         }
+
         .collapsible-section summary {
             font-weight: bold;
             cursor: pointer;
@@ -270,31 +334,35 @@
             background-color: #f0f0f0;
             border-radius: 4px;
         }
+
         .collapsible-section[open] summary {
             margin-bottom: 10px;
         }
-				.pay-img{
-					display: flex;
-					justify-content: space-around;
-				}
-				.pay-img img {
-					width: 200px;
-					height: 200px;
-				}
+
+        .pay-img {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .pay-img img {
+            width: 200px;
+            height: 200px;
+        }
     </style>
 </head>
+
 <body>
     <h1>车棋游戏</h1>
     <p>规则: 您操控一个车(红色)，对方有多种象棋棋子。车可以横竖直线移动，需要避开对方棋子的攻击范围。每回合击杀一个棋子，游戏继续。</p>
-    
+
     <div class="game-status" id="gameStatus">游戏状态：拖拽棋子可以移动它们。移动后系统会自动计算车的最佳移动位置。</div>
-    
+
     <div class="board" id="board"></div>
-    
+
     <div class="mobile-controls" id="mobileControls">
         <p class="mobile-info">提示：在移动设备上，先点击棋子选中，再点击目标位置移动</p>
     </div>
-    
+
     <details class="collapsible-section" open>
         <summary>添加棋子</summary>
         <div class="input-area">
@@ -326,17 +394,17 @@
             </div>
         </div>
     </details>
-    
+
     <div class="result-area" id="resultArea">
         <h3>车的最佳移动</h3>
         <p>当前无建议。请添加棋子后计算。</p>
     </div>
-    
+
     <div class="button-group">
         <button class="btn" id="calculateMove">计算最佳移动</button>
         <button class="btn" id="resetBoard">重置棋盘</button>
     </div>
-    
+
     <details class="collapsible-section" open>
         <summary>棋局存档</summary>
         <div class="archive-area">
@@ -355,16 +423,17 @@
             </div>
         </div>
     </details>
-		<h3>打赏</h3>
-		<div>
-			<p>如果你觉得这个对你有帮助，你可以帮作者买一杯咖啡表示支持，创作不易，谢谢老板！❤❤❤</p>
-			<p>If you think this project is helpful to you, you can help the author buy a cup of coffee to show your support!</p>
-			<div class="pay-img">
-				<img src="./wechat.jpg"/>
-				<img src="./alipay.jpg"/>
-			</div>
-		</div>
-    
+    <h3>打赏</h3>
+    <div>
+        <p>如果你觉得这个对你有帮助，你可以帮作者买一杯咖啡表示支持，创作不易，谢谢老板！❤❤❤</p>
+        <p>If you think this project is helpful to you, you can help the author buy a cup of coffee to show your
+            support!</p>
+        <div class="pay-img">
+            <img src="./wechat.jpg" />
+            <img src="./alipay.jpg" />
+        </div>
+    </div>
+
     <p class="end-page-text">著作权归 街角音20区-角色ID-400004000048417 所有，侵权必究!!!</p>
     <script>
         // 初始化棋盘和棋子
@@ -379,7 +448,7 @@
         let isDeleteMode = false; // 是否处于删除模式
         let selectedPiece = null; // 移动端：当前选中的棋子
         let isMobileDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        
+
         // 棋盘状态跟踪
         let moveCount = 0; // 记录车已经移动的步数
         let difficultyLevel = 'normal'; // 难度级别: easy, normal, hard
@@ -388,7 +457,7 @@
         // 初始化棋盘
         function initBoard() {
             board.innerHTML = '';
-            
+
             // 创建单元格和坐标点
             for (let y = 1; y <= 9; y++) {
                 for (let x = 1; x <= 8; x++) {
@@ -397,33 +466,33 @@
                     cell.dataset.x = x;
                     cell.dataset.y = y;
                     cell.dataset.coord = `(${x},${y})`;
-                    
+
                     // 添加拖拽相关事件处理
                     cell.addEventListener('dragover', handleDragOver);
                     cell.addEventListener('drop', handleDrop);
                     cell.addEventListener('dragenter', handleDragEnter);
                     cell.addEventListener('dragleave', handleDragLeave);
                     cell.addEventListener('click', () => selectCell(x, y));
-                    
+
                     board.appendChild(cell);
                 }
             }
-            
+
             // 初始化棋子
             pieces = [
                 { type: 'pawn', x: 4, y: 3 },
                 { type: 'pawn', x: 6, y: 3 },
                 { type: 'pawn', x: 8, y: 3 }
             ];
-            
+
             // 添加车
             pieces.push({ type: 'car', x: carPosition.x, y: carPosition.y });
-            
+
             renderPieces();
-            
+
             // 初始状态下计算最佳移动
             setTimeout(calculateBestMoveForCar, 500);
-            
+
             // 为移动端添加触摸事件处理
             if (isMobileDevice) {
                 setupMobileTouchHandlers();
@@ -432,7 +501,7 @@
             // 重置棋局状态计数器
             moveCount = 0;
             boardHistory = [];
-            
+
             // 保存初始棋盘状态
             saveBoardState();
         }
@@ -441,7 +510,7 @@
         function saveBoardState() {
             boardHistory.push(JSON.stringify(pieces));
         }
-        
+
         // 渲染棋子 - 修改为支持移动端
         function renderPieces() {
             // 清除所有棋子
@@ -452,16 +521,16 @@
                 c.classList.remove('valid-drop');
                 c.classList.remove('invalid-drop');
             });
-            
+
             // 添加棋子 - 放回格子内
             pieces.forEach(piece => {
                 const cell = findCell(piece.x, piece.y);
                 if (!cell) return;
-                
+
                 const pieceElem = document.createElement('div');
                 pieceElem.className = `piece ${piece.type}`;
                 pieceElem.textContent = getPieceSymbol(piece.type);
-                
+
                 if (!isMobileDevice) {
                     // 桌面端：设置拖拽属性
                     pieceElem.draggable = true;
@@ -474,7 +543,7 @@
                         handleMobilePieceClick(piece);
                     });
                 }
-                
+
                 // 添加删除功能 - 点击删除棋子
                 pieceElem.addEventListener('click', (e) => {
                     if (isDeleteMode && piece.type !== 'car') { // 不允许删除车
@@ -482,29 +551,29 @@
                         e.stopPropagation(); // 防止触发单元格的点击事件
                     }
                 });
-                
+
                 cell.appendChild(pieceElem);
             });
-            
+
             // 高亮车的位置
             const carCell = findCell(carPosition.x, carPosition.y);
             if (carCell) {
                 carCell.classList.add('selected');
             }
-            
+
             // 如果在删除模式，添加删除模式类
             if (isDeleteMode) {
                 board.classList.add('delete-mode');
             } else {
                 board.classList.remove('delete-mode');
             }
-            
+
             // 显示当前选中的棋子（移动端）
             if (selectedPiece) {
                 const selectedCell = findCell(selectedPiece.x, selectedPiece.y);
                 if (selectedCell) {
                     selectedCell.classList.add('selected');
-                    
+
                     // 显示可能的移动位置（如果是车）
                     if (selectedPiece.type === 'car') {
                         showPossibleMoves();
@@ -512,31 +581,31 @@
                 }
             }
         }
-        
+
         // 删除棋子函数
         function deletePiece(piece) {
             if (piece.type === 'car') {
                 alert('不能删除车！');
                 return;
             }
-            
+
             // 从数组中移除棋子
             pieces = pieces.filter(p => p !== piece);
-            
+
             // 更新状态
             gameStatus.textContent = `删除了 ${getPieceSymbol(piece.type)} 在坐标 (${piece.x}, ${piece.y})`;
-            
+
             // 重新渲染棋盘
             renderPieces();
-            
+
             // 重新计算最佳移动
             setTimeout(calculateBestMoveForCar, 500);
         }
-        
+
         // 切换删除模式
         function toggleDeleteMode() {
             isDeleteMode = !isDeleteMode;
-            
+
             const deleteBtn = document.getElementById('toggleDeleteMode');
             if (isDeleteMode) {
                 deleteBtn.textContent = '退出删除模式';
@@ -545,10 +614,10 @@
                 deleteBtn.textContent = '删除棋子';
                 gameStatus.textContent = '已退出删除模式';
             }
-            
+
             renderPieces();
         }
-        
+
         // 拖拽开始
         function handleDragStart(e, piece) {
             // 如果处于删除模式，不允许拖拽
@@ -556,25 +625,25 @@
                 e.preventDefault();
                 return;
             }
-            
+
             draggedPiece = piece;
             draggedPieceElement = e.target;
             originalPosition = { x: piece.x, y: piece.y };
-            
+
             // 设置拖拽效果
             e.target.classList.add('dragging');
-            
+
             // 显示可能的移动位置
             if (piece.type === 'car') {
                 showPossibleMoves();
             }
-            
+
             // 延迟设置，确保能看到拖拽的元素
             setTimeout(() => {
                 e.target.style.opacity = '0.4';
             }, 0);
         }
-        
+
         // 拖拽经过
         function handleDragOver(e) {
             if (e.preventDefault) {
@@ -582,13 +651,13 @@
             }
             return false;
         }
-        
+
         // 拖拽进入
         function handleDragEnter(e) {
             // 获取目标单元格坐标
             const targetX = parseInt(this.dataset.x);
             const targetY = parseInt(this.dataset.y);
-            
+
             // 拖拽布局模式：所有棋子都能放在任意位置，只要该位置没有其他棋子
             if (draggedPiece) {
                 if (!pieces.some(p => p !== draggedPiece && p.x === targetX && p.y === targetY)) {
@@ -598,42 +667,42 @@
                 }
             }
         }
-        
+
         // 拖拽离开
         function handleDragLeave(e) {
             this.classList.remove('valid-drop');
             this.classList.remove('invalid-drop');
         }
-        
+
         // 拖拽结束
         function handleDragEnd(e) {
             // 恢复样式
             e.target.classList.remove('dragging');
             e.target.style.opacity = '1';
-            
+
             // 清除高亮
             document.querySelectorAll('.cell').forEach(cell => {
                 cell.classList.remove('valid-drop');
                 cell.classList.remove('invalid-drop');
             });
-            
+
             draggedPiece = null;
             draggedPieceElement = null;
         }
-        
+
         // 拖拽放置
         function handleDrop(e) {
             e.preventDefault();
-            
+
             if (!draggedPiece) return;
-            
+
             // 获取目标单元格坐标
             const targetX = parseInt(this.dataset.x);
             const targetY = parseInt(this.dataset.y);
-            
+
             // 检查目标位置是否已有棋子（除了被拖拽的棋子自身）
             const targetPiece = pieces.find(p => p !== draggedPiece && p.x === targetX && p.y === targetY);
-            
+
             // 如果是车并且目标位置有其他棋子，则吃掉它
             if (draggedPiece.type === 'car' && targetPiece) {
                 pieces = pieces.filter(p => p !== targetPiece);
@@ -645,42 +714,293 @@
                 // 其他棋子不能移动到有棋子的位置
                 return false;
             }
-            
+
             // 更新棋子位置
             draggedPiece.x = targetX;
             draggedPiece.y = targetY;
-            
+
             // 如果是车，更新车的位置
             if (draggedPiece.type === 'car') {
                 carPosition = { x: targetX, y: targetY };
             }
-            
+
             renderPieces();
-            
+
             // 棋盘状态改变，重新计算最佳移动
             setTimeout(calculateBestMoveForCar, 500);
-            
+
             return false;
         }
-        
+
+        // 计算车的最佳移动
+        function calculateBestMoveForCar() {
+            // 获取车的当前位置
+            const car = pieces.find(p => p.type === 'car');
+            if (!car) {
+                resultArea.innerHTML = `<h3>车的最佳移动</h3><p>未找到车，请确保棋盘上有车。</p>`;
+                return;
+            }
+
+            // 获取车可能的安全移动
+            const safeMoves = getSafeMovesForCar();
+
+            if (safeMoves.length === 0) {
+                resultArea.innerHTML = `<h3>车的最佳移动</h3><p>没有安全的移动位置！车可能被围困。</p>`;
+                return;
+            }
+
+            // 为每个可能的移动计算评分
+            const scoredMoves = safeMoves.map(move => {
+                // 基础评分
+                let score = 0;
+
+                // 检查是否可以吃掉敌方棋子
+                const targetPiece = pieces.find(p => p !== car && p.x === move.x && p.y === move.y);
+                if (targetPiece) {
+                    // 吃子得分，根据棋子类型加分
+                    switch (targetPiece.type) {
+                        case 'pawn': score += 10; break;
+                        case 'knight': score += 30; break;
+                        case 'cannon': score += 40; break;
+                        case 'bishop': score += 30; break;
+                        case 'advisor': score += 20; break;
+                        case 'king': score += 100; break;
+                        case 'rook': score += 50; break;
+                    }
+                }
+
+                // 移动后可以攻击的棋子数量
+                const attackablePieces = pieces.filter(p => {
+                    if (p === car) return false;
+                    // 检查移动后是否能攻击到该棋子
+                    return isValidCarMove(move.x, move.y, p.x, p.y);
+                }).length;
+
+                // 根据能攻击的棋子数量加分
+                score += attackablePieces * 5;
+
+                // 避免靠近棋盘边缘
+                if (move.x === 1 || move.x === 8) score -= 2;
+                if (move.y === 1 || move.y === 9) score -= 2;
+
+                // 优先考虑棋盘中央位置
+                score += (5 - Math.abs(move.x - 4.5)) + (5 - Math.abs(move.y - 5));
+
+                return { ...move, score };
+            });
+
+            // 按评分排序，选择最佳移动
+            scoredMoves.sort((a, b) => b.score - a.score);
+            const bestMove = scoredMoves[0];
+
+            // 更新结果区域
+            let moveDescription = "";
+            const targetPiece = pieces.find(p => p !== car && p.x === bestMove.x && p.y === bestMove.y);
+            if (targetPiece) {
+                moveDescription = `<strong>吃掉${getPieceSymbol(targetPiece.type)}</strong>在坐标(${bestMove.x}, ${bestMove.y})`;
+            } else {
+                moveDescription = `移动到坐标(${bestMove.x}, ${bestMove.y})`;
+            }
+
+            resultArea.innerHTML = `
+                <h3>车的最佳移动</h3>
+                <p>建议: ${moveDescription}</p>
+                <p>评分: ${bestMove.score.toFixed(1)}</p>
+                <p>可选移动: ${safeMoves.length}个安全位置</p>
+            `;
+
+            // 高亮显示最佳移动位置
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('move-suggestion'));
+            const bestCell = findCell(bestMove.x, bestMove.y);
+            if (bestCell) {
+                bestCell.classList.add('move-suggestion');
+            }
+        }
+
+        // 检查棋子是否可以攻击到指定位置
+        function canPieceAttack(piece, x, y) {
+            switch (piece.type) {
+                case 'pawn':
+                    // 卒只能向前走一步，没有进入对方半场的话不能横着走
+                    return Math.abs(piece.x - x) + Math.abs(piece.y - y) === 1;
+
+                case 'rook':
+                    // 车走直线且不能越子
+                    return (piece.x === x || piece.y === y) && !isPathBlocked(piece.x, piece.y, x, y);
+
+                case 'knight':
+                    // 马走日字，但是可能被蹩马腿
+                    if ((Math.abs(piece.x - x) === 1 && Math.abs(piece.y - y) === 2) ||
+                        (Math.abs(piece.x - x) === 2 && Math.abs(piece.y - y) === 1)) {
+                        // 检查蹩马腿
+                        if (Math.abs(piece.x - x) === 1) {
+                            // 竖着的日，检查横向的别腿点
+                            const blockY = piece.y + (y > piece.y ? 1 : -1);
+                            return !pieces.some(p => p.x === piece.x && p.y === blockY);
+                        } else {
+                            // 横着的日，检查纵向的别腿点
+                            const blockX = piece.x + (x > piece.x ? 1 : -1);
+                            return !pieces.some(p => p.x === blockX && p.y === piece.y);
+                        }
+                    }
+                    return false;
+
+                case 'cannon':
+                    // 炮移动时同车，但攻击时需隔一子
+                    if (piece.x !== x && piece.y !== y) return false; // 必须直线
+
+                    // 计算路径上的棋子数
+                    let pieceCount = countPiecesInPath(piece.x, piece.y, x, y);
+
+                    // 炮攻击时要有一个棋子作为炮架
+                    return pieceCount === 1 && pieces.some(p => p.x === x && p.y === y);
+
+                default:
+                    return false;
+            }
+        }
+
+        // 检查路径上是否有棋子阻挡
+        function isPathBlocked(fromX, fromY, toX, toY) {
+            // 必须是直线移动
+            if (fromX !== toX && fromY !== toY) return true;
+
+            return countPiecesInPath(fromX, fromY, toX, toY) > 0;
+        }
+
+        // 计算路径上的棋子数量
+        function countPiecesInPath(fromX, fromY, toX, toY) {
+            let count = 0;
+
+            if (fromX === toX) {
+                // 垂直移动
+                const minY = Math.min(fromY, toY);
+                const maxY = Math.max(fromY, toY);
+                for (let y = minY + 1; y < maxY; y++) {
+                    if (pieces.some(p => p.x === fromX && p.y === y)) {
+                        count++;
+                    }
+                }
+            } else if (fromY === toY) {
+                // 水平移动
+                const minX = Math.min(fromX, toX);
+                const maxX = Math.max(fromX, toX);
+                for (let x = minX + 1; x < maxX; x++) {
+                    if (pieces.some(p => p.x === x && p.y === fromY)) {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        // 检查棋子移动到新位置是否能阻止车吃子
+        function canBlockCarFromCapturing(simulatedPieces, newX, newY) {
+            // 找到车的位置
+            const car = simulatedPieces.find(p => p.type === 'car');
+            if (!car) return false;
+
+            // 找到所有可能被车吃掉的棋子
+            const capturablePieces = simulatedPieces.filter(p => {
+                if (p.type === 'car') return false;
+
+                // 检查车是否可以直接吃掉该棋子
+                if ((car.x === p.x || car.y === p.y) &&
+                    !isPathBlockedInSimulation(simulatedPieces, car.x, car.y, p.x, p.y)) {
+                    return true;
+                }
+                return false;
+            });
+
+            // 如果没有可以被吃掉的棋子，则不需要阻挡
+            if (capturablePieces.length === 0) return true;
+
+            // 检查新位置是否能阻挡车吃棋子
+            return capturablePieces.some(p => {
+                // 检查新位置是否在车和目标棋子之间
+                if (car.x === p.x && car.x === newX) {
+                    const minY = Math.min(car.y, p.y);
+                    const maxY = Math.max(car.y, p.y);
+                    return newY > minY && newY < maxY;
+                }
+                if (car.y === p.y && car.y === newY) {
+                    const minX = Math.min(car.x, p.x);
+                    const maxX = Math.max(car.x, p.x);
+                    return newX > minX && newX < maxX;
+                }
+                return false;
+            });
+        }
+
+        // 计算位置得分，用于评估移动的好坏
+        function getPositionScore(x, y) {
+            let score = 0;
+
+            // 远离边缘得更高分
+            score += Math.min(x - 1, 8 - x) * 0.5;
+            score += Math.min(y - 1, 9 - y) * 0.5;
+
+            // 接近中心得高分
+            score += (4.5 - Math.abs(x - 4.5)) * 0.8;
+            score += (5 - Math.abs(y - 5)) * 0.8;
+
+            // 如果位置更接近车，得分更高（因为可能更有效地阻挡）
+            const car = pieces.find(p => p.type === 'car');
+            if (car) {
+                const distance = Math.abs(x - car.x) + Math.abs(y - car.y);
+                score += (10 - distance) * 0.3;
+            }
+
+            return score;
+        }
+
+        // 在模拟环境中检查路径是否被阻挡
+        function isPathBlockedInSimulation(simulatedPieces, fromX, fromY, toX, toY) {
+            // 必须是直线移动
+            if (fromX !== toX && fromY !== toY) return true;
+
+            if (fromX === toX) {
+                // 垂直移动
+                const minY = Math.min(fromY, toY);
+                const maxY = Math.max(fromY, toY);
+                for (let y = minY + 1; y < maxY; y++) {
+                    if (simulatedPieces.some(p => p.x === fromX && p.y === y)) {
+                        return true;
+                    }
+                }
+            } else {
+                // 水平移动
+                const minX = Math.min(fromX, toX);
+                const maxX = Math.max(fromX, toX);
+                for (let x = minX + 1; x < maxX; x++) {
+                    if (simulatedPieces.some(p => p.x === x && p.y === fromY)) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         // 检查车的移动是否有效
         function isValidCarMove(fromX, fromY, toX, toY) {
             // 检查是否是直线移动
             if (fromX !== toX && fromY !== toY) {
                 return false;
             }
-            
+
             // 检查路径上是否有其他棋子
             if (isPathBlocked(fromX, fromY, toX, toY)) {
                 return false;
             }
-            
+
             return true;
         }
-        
+
         // 获取棋子符号
         function getPieceSymbol(type) {
-            switch(type) {
+            switch (type) {
                 case 'car': return '车';
                 case 'pawn': return '卒';
                 case 'rook': return '车';
@@ -692,21 +1012,21 @@
                 default: return '?';
             }
         }
-        
+
         // 查找指定坐标的单元格
         function findCell(x, y) {
             return document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
         }
-        
+
         // 选择单元格 - 支持移动端
         function selectCell(x, y) {
             // 如果处于删除模式，点击空格子不做任何操作
             if (isDeleteMode) {
                 return;
             }
-            
+
             const piece = pieces.find(p => p.x === x && p.y === y);
-            
+
             if (isMobileDevice) {
                 // 移动端逻辑
                 if (piece) {
@@ -717,19 +1037,19 @@
                             // 吃掉棋子
                             pieces = pieces.filter(p => p !== piece);
                             gameStatus.textContent = `吃掉了 ${getPieceSymbol(piece.type)} 在坐标 (${x}, ${y})`;
-                            
+
                             // 播放吃子动画
                             const cell = findCell(x, y);
                             if (cell) {
                                 cell.classList.add('captured');
                                 setTimeout(() => cell.classList.remove('captured'), 500);
                             }
-                            
+
                             // 移动车
                             selectedPiece.x = x;
                             selectedPiece.y = y;
                             carPosition = { x, y };
-                            
+
                             // 检查游戏状态
                             if (isCarInDanger()) {
                                 gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
@@ -741,14 +1061,14 @@
                                 renderPieces();
                                 return;
                             }
-                            
+
                             // 移动成功提示
                             gameStatus.textContent = `车吃掉了 ${getPieceSymbol(piece.type)} 移动到 (${x}, ${y})`;
-                            
+
                             // 移动完成，清除选择
                             selectedPiece = null;
                             renderPieces();
-                            
+
                             // 重新计算最佳移动
                             setTimeout(calculateBestMoveForCar, 500);
                             return;
@@ -756,7 +1076,7 @@
                             gameStatus.textContent = "无法吃掉该棋子！车只能直线移动且不能越过其他棋子";
                             return;
                         }
-                    } 
+                    }
                     else {
                         // 如果没有选中棋子，或选中的不是车，则选择点击的棋子
                         handleMobilePieceClick(piece);
@@ -782,7 +1102,7 @@
                             // 如果有棋子，则吃掉它
                             pieces = pieces.filter(p => p !== targetPiece);
                             gameStatus.textContent = `吃掉了 ${getPieceSymbol(targetPiece.type)} 在坐标 (${x}, ${y})`;
-                            
+
                             // 播放吃子动画
                             const cell = findCell(x, y);
                             if (cell) {
@@ -790,23 +1110,23 @@
                                 setTimeout(() => cell.classList.remove('captured'), 500);
                             }
                         }
-                        
+
                         moveCarTo(x, y);
-                        
+
                         // 自动计算下一步最佳移动
                         setTimeout(calculateBestMoveForCar, 500);
                     }
                 }
             }
         }
-        
+
         // 显示车可能的移动位置
         function showPossibleMoves() {
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('move-suggestion'));
-            
+
             // 获取安全的移动位置
             const safeMoves = getSafeMovesForCar();
-            
+
             // 高亮显示安全的移动位置
             safeMoves.forEach(move => {
                 const cell = findCell(move.x, move.y);
@@ -815,13 +1135,13 @@
                 }
             });
         }
-        
+
         // 移动车到指定位置
         function moveCarTo(x, y) {
             // 检查是否存在车
             const carPiece = pieces.find(p => p.type === 'car');
             if (!carPiece) return;
-            
+
             // 检查目标位置是否有棋子
             const targetPiece = pieces.find(p => p.x === x && p.y === y);
             if (targetPiece) {
@@ -837,18 +1157,18 @@
                     }
                 }
             }
-            
+
             // 移动车
             carPiece.x = x;
             carPiece.y = y;
             carPosition = { x, y };
-            
+
             // 增加移动计数
             moveCount++;
-            
+
             // 保存移动后的棋盘状态
             saveBoardState();
-            
+
             // 根据移动步数，可能需要增加新棋子
             if (moveCount % 3 === 0) {
                 addRandomPieces();
@@ -856,7 +1176,7 @@
                 // 可能需要调整某个棋子的位置
                 maybeMovePiece();
             }
-            
+
             // 检查游戏状态
             if (isCarInDanger()) {
                 gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
@@ -866,30 +1186,30 @@
                 }, 100);
                 return;
             }
-            
+
             renderPieces();
         }
-        
+
         // 在特定步数后添加新的随机棋子
         function addRandomPieces() {
             const pieceTypes = ['pawn', 'knight', 'cannon', 'bishop', 'advisor'];
-            
+
             // 添加3个新棋子
             for (let i = 0; i < 3; i++) {
                 let position = findRandomEmptyPosition();
                 if (position) {
                     const randomType = pieceTypes[Math.floor(Math.random() * pieceTypes.length)];
-                    pieces.push({ 
-                        type: randomType, 
-                        x: position.x, 
-                        y: position.y 
+                    pieces.push({
+                        type: randomType,
+                        x: position.x,
+                        y: position.y
                     });
-                    
+
                     gameStatus.textContent = `已移动${moveCount}步，新增了${getPieceSymbol(randomType)}棋子！`;
                 }
             }
         }
-        
+
         // 找寻棋盘上的空位
         function findRandomEmptyPosition() {
             // 所有可能的位置
@@ -902,18 +1222,18 @@
                     }
                 }
             }
-            
+
             // 过滤掉已经有棋子的位置
-            const emptyPositions = allPositions.filter(pos => 
+            const emptyPositions = allPositions.filter(pos =>
                 !pieces.some(p => p.x === pos.x && p.y === pos.y)
             );
-            
+
             if (emptyPositions.length === 0) return null;
-            
+
             // 随机选择一个空位
             return emptyPositions[Math.floor(Math.random() * emptyPositions.length)];
         }
-        
+
         // 在步数不是3的倍数时，可能移动一个现有棋子
         function maybeMovePiece() {
             // 35%的概率会移动一个现有棋子
@@ -922,7 +1242,7 @@
                 if (otherPieces.length > 0) {
                     // 随机选择一个棋子移动
                     const pieceToMove = otherPieces[Math.floor(Math.random() * otherPieces.length)];
-                    
+
                     // 尝试找一个更安全的位置
                     const newPosition = findSaferPositionForPiece(pieceToMove);
                     if (newPosition) {
@@ -930,24 +1250,24 @@
                         const oldY = pieceToMove.y;
                         pieceToMove.x = newPosition.x;
                         pieceToMove.y = newPosition.y;
-                        
+
                         gameStatus.textContent = `${getPieceSymbol(pieceToMove.type)}从(${oldX},${oldY})移动到了(${newPosition.x},${newPosition.y})`;
                     }
                 }
             }
         }
-        
+
         // 为棋子找一个更安全的位置
         function findSaferPositionForPiece(piece) {
             const possibleMoves = [];
-            
+
             // 考虑上下左右四个方向
-            const directions = [{dx:0,dy:1}, {dx:0,dy:-1}, {dx:1,dy:0}, {dx:-1,dy:0}];
-            
+            const directions = [{ dx: 0, dy: 1 }, { dx: 0, dy: -1 }, { dx: 1, dy: 0 }, { dx: -1, dy: 0 }];
+
             for (const direction of directions) {
                 const newX = piece.x + direction.dx;
                 const newY = piece.y + direction.dy;
-                
+
                 // 确保位置在棋盘范围内
                 if (newX >= 1 && newX <= 8 && newY >= 1 && newY <= 9) {
                     // 确保新位置没有棋子
@@ -956,7 +1276,7 @@
                         const simulatedPieces = [...pieces];
                         const pieceIndex = simulatedPieces.findIndex(p => p === piece);
                         simulatedPieces[pieceIndex] = { ...piece, x: newX, y: newY };
-                        
+
                         // 移动到这个位置后是否能阻止车吃子
                         if (canBlockCarFromCapturing(simulatedPieces, newX, newY)) {
                             possibleMoves.push({ x: newX, y: newY, score: getPositionScore(newX, newY) });
@@ -964,67 +1284,67 @@
                     }
                 }
             }
-            
+
             // 如果有可能的移动，选择得分最高的
             if (possibleMoves.length > 0) {
                 possibleMoves.sort((a, b) => b.score - a.score);
                 return possibleMoves[0];
             }
-            
+
             return null;
         }
-        
+
         // 为棋子找一个更安全的位置
         function getSafeMovesForCar() {
             const car = pieces.find(p => p.type === 'car');
             if (!car) return [];
-            
+
             const possibleMoves = [];
-            
+
             // 横向移动
             for (let x = 1; x <= 8; x++) {
                 if (x !== car.x && !isPathBlocked(car.x, car.y, x, car.y)) {
                     possibleMoves.push({ x, y: car.y });
                 }
             }
-            
+
             // 纵向移动
             for (let y = 1; y <= 9; y++) {
                 if (y !== car.y && !isPathBlocked(car.x, car.y, car.x, y)) {
                     possibleMoves.push({ x: car.x, y });
                 }
             }
-            
+
             // 过滤出安全的移动
             return possibleMoves.filter(move => {
                 // 检查移动到该位置是否安全
                 return !pieces.some(piece => {
                     // 忽略车自己
                     if (piece.type === 'car') return false;
-                    
+
                     // 如果这个位置已经有棋子，检查是否可以吃掉它
                     if (piece.x === move.x && piece.y === move.y) {
                         return false; // 可以吃掉这个棋子，所以仍然是安全的
                     }
-                    
+
                     // 特殊处理炮的威胁：检查移动后位置是否会被炮隔子攻击
                     if (piece.type === 'cannon') {
                         // 检查是否在同一直线上
                         if (piece.x === move.x || piece.y === move.y) {
                             // 计算中间有几个棋子
                             let pieceCount = 0;
-                            
+
                             // 临时移动车到目标位置进行检查
                             const simulatedPieces = [...pieces];
                             const carIndex = simulatedPieces.findIndex(p => p.type === 'car');
                             simulatedPieces[carIndex].x = move.x;
                             simulatedPieces[carIndex].y = move.y;
-                            
+
                             if (piece.x === move.x) {
                                 // 在同一垂直线上
                                 const minY = Math.min(piece.y, move.y);
                                 const maxY = Math.max(piece.y, move.y);
-                                
+
                                 // 统计炮和目标位置之间的棋子数量
                                 for (let i = minY + 1; i < maxY; i++) {
                                     if (simulatedPieces.some(p => p.x === move.x && p.y === i && p !== simulatedPieces[carIndex])) {
@@ -1035,7 +1355,7 @@
                                 // 在同一水平线上
                                 const minX = Math.min(piece.x, move.x);
                                 const maxX = Math.max(piece.x, move.x);
-                                
+
                                 // 统计炮和目标位置之间的棋子数量
                                 for (let i = minX + 1; i < maxX; i++) {
                                     if (simulatedPieces.some(p => p.x === i && p.y === move.y && p !== simulatedPieces[carIndex])) {
@@ -1043,14 +1363,14 @@
                                     }
                                 }
                             }
-                            
+
                             // 如果中间只有一个棋子，炮可以攻击到车
                             if (pieceCount === 1) {
                                 return true; // 此位置不安全
                             }
                         }
                     }
-                    
+
                     // 检查移动后是否会被其他棋子攻击
                     return canPieceAttack(piece, move.x, move.y);
                 });
@@ -1061,22 +1381,22 @@
         function isCarInDanger() {
             const car = pieces.find(p => p.type === 'car');
             if (!car) return false;
-            
+
             return pieces.some(piece => {
                 if (piece.type === 'car') return false;
-                
+
                 // 特殊判断炮对车的威胁
                 if (piece.type === 'cannon') {
                     // 检查炮是否与车在同一直线
                     if (piece.x === car.x || piece.y === car.y) {
                         // 计算炮和车之间的棋子数量
                         let pieceCount = 0;
-                        
+
                         if (piece.x === car.x) {
                             // 在同一列
                             const minY = Math.min(piece.y, car.y);
                             const maxY = Math.max(piece.y, car.y);
-                            
+
                             for (let y = minY + 1; y < maxY; y++) {
                                 if (pieces.some(p => p.x === car.x && p.y === y && p !== car && p !== piece)) {
                                     pieceCount++;
@@ -1086,64 +1406,64 @@
                             // 在同一行
                             const minX = Math.min(piece.x, car.x);
                             const maxX = Math.max(piece.x, car.x);
-                            
+
                             for (let x = minX + 1; x < maxX; x++) {
                                 if (pieces.some(p => p.x === x && p.y === car.y && p !== car && p !== piece)) {
                                     pieceCount++;
                                 }
                             }
                         }
-                        
+
                         // 如果炮和车之间正好隔了一个棋子，炮可以攻击到车
                         if (pieceCount === 1) {
                             return true;
                         }
                     }
                 }
-                
+
                 return canPieceAttack(piece, car.x, car.y);
             });
         }
-        
+
         // 添加新棋子
         document.getElementById('addPiece').addEventListener('click', () => {
             // 如果处于删除模式，先退出删除模式
             if (isDeleteMode) {
                 toggleDeleteMode();
             }
-            
+
             const type = document.getElementById('pieceType').value;
             const x = parseInt(document.getElementById('xCoord').value);
             const y = parseInt(document.getElementById('yCoord').value);
-            
+
             // 验证输入
             if (isNaN(x) || isNaN(y) || x < 1 || x > 8 || y < 1 || y > 9) {
                 alert('无效的坐标！');
                 return;
             }
-            
+
             // 检查该位置是否已有棋子
             if (pieces.some(p => p.x === x && p.y === y)) {
                 alert('该位置已有棋子！');
                 return;
             }
-            
+
             // 添加棋子
             pieces.push({ type, x, y });
             renderPieces();
-            
+
             gameStatus.textContent = `添加了 ${getPieceSymbol(type)} 在坐标 (${x}, ${y})`;
-            
+
             // 重新计算最佳移动
             setTimeout(calculateBestMoveForCar, 500);
         });
-        
+
         // 删除棋子模式切换
         document.getElementById('toggleDeleteMode').addEventListener('click', toggleDeleteMode);
-        
+
         // 计算最佳移动
         document.getElementById('calculateMove').addEventListener('click', calculateBestMoveForCar);
-        
+
         // 重置棋盘
         document.getElementById('resetBoard').addEventListener('click', () => {
             // 如果处于删除模式，先退出删除模式
@@ -1152,14 +1472,14 @@
             }
             initBoard();
         });
-        
+
         // 保存棋局到本地存储
         function saveGameToLocalStorage(name) {
             if (!name) {
                 alert('请输入存档名称！');
                 return;
             }
-            
+
             // 创建游戏存档对象
             const gameState = {
                 pieces: pieces,
@@ -1167,10 +1487,10 @@
                 timestamp: new Date().toISOString(),
                 name: name
             };
-            
+
             // 获取现有存档列表
             let savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
-            
+
             // 检查是否有同名存档
             const existingIndex = savedGames.findIndex(game => game.name === name);
             if (existingIndex >= 0) {
@@ -1183,33 +1503,33 @@
                 // 添加新存档
                 savedGames.push(gameState);
             }
-            
+
             // 保存到本地存储
             localStorage.setItem('chessGames', JSON.stringify(savedGames));
-            
+
             gameStatus.textContent = `已成功保存棋局 "${name}"`;
-            
+
             // 更新存档列表（如果已显示）
             if (document.getElementById('archiveList').style.display !== 'none') {
                 loadGameList();
             }
         }
-        
+
         // 加载棋局列表
         function loadGameList() {
             const archiveList = document.getElementById('archiveList');
-            
+
             // 显示存档列表区域
             archiveList.style.display = 'block';
-            
+
             // 获取所有存档
             const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
-            
+
             if (savedGames.length === 0) {
                 archiveList.innerHTML = '<p>暂无存档</p>';
                 return;
             }
-            
+
             // 生成存档列表HTML
             let html = '';
             savedGames.forEach((game, index) => {
@@ -1222,107 +1542,107 @@
                     </div>
                 `;
             });
-            
+
             archiveList.innerHTML = html;
         }
-        
+
         // 加载指定存档
         function loadGame(name) {
             // 获取所有存档
             const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
-            
+
             // 查找指定存档
             const gameState = savedGames.find(game => game.name === name);
-            
+
             if (!gameState) {
                 alert(`找不到名为"${name}"的存档！`);
                 return;
             }
-            
+
             // 确认是否加载
             if (!confirm(`确定要加载"${name}"？当前棋盘将被覆盖。`)) {
                 return;
             }
-            
+
             // 恢复棋盘状态
             pieces = gameState.pieces;
             carPosition = gameState.carPosition;
-            
+
             // 刷新棋盘
             renderPieces();
-            
+
             gameStatus.textContent = `已加载棋局 "${name}"`;
-            
+
             // 计算最佳移动
             setTimeout(calculateBestMoveForCar, 500);
         }
-        
+
         // 删除存档
         function deleteGame(name) {
             if (!confirm(`确定要删除"${name}"存档吗？此操作不可撤销。`)) {
                 return;
             }
-            
+
             // 获取所有存档
             let savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
-            
+
             // 过滤掉要删除的存档
             savedGames = savedGames.filter(game => game.name !== name);
-            
+
             // 保存回本地存储
             localStorage.setItem('chessGames', JSON.stringify(savedGames));
-            
+
             // 更新界面
             loadGameList();
             gameStatus.textContent = `已删除存档 "${name}"`;
         }
-        
+
         // 导出存档为文件
         function exportGame(name) {
             // 获取所有存档
             const savedGames = JSON.parse(localStorage.getItem('chessGames') || '[]');
-            
+
             // 查找指定存档
             const gameState = savedGames.find(game => game.name === name);
-            
+
             if (!gameState) {
                 alert(`找不到名为"${name}"的存档！`);
                 return;
             }
-            
+
             // 将存档转换为JSON字符串
             const gameStateJson = JSON.stringify(gameState, null, 2);
-            
+
             // 创建下载链接
             const blob = new Blob([gameStateJson], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            
+
             // 创建下载元素并点击
             const a = document.createElement('a');
             a.href = url;
             a.download = `${name}_棋局存档.json`;
             a.click();
-            
+
             // 释放URL
             setTimeout(() => URL.revokeObjectURL(url), 100);
         }
-        
+
         // 添加按钮事件监听器
         document.getElementById('saveGame').addEventListener('click', () => {
             const name = document.getElementById('archiveName').value.trim();
             saveGameToLocalStorage(name);
         });
-        
+
         document.getElementById('loadGameList').addEventListener('click', loadGameList);
-        
+
         // 添加全局函数用于HTML中直接调用
         window.loadGame = loadGame;
         window.deleteGame = deleteGame;
         window.exportGame = exportGame;
-        
+
         // 初始化棋盘
         initBoard();
-        
+
         // 检测设备类型并显示相应提示
         if (isMobileDevice) {
             document.getElementById('mobileControls').style.display = 'block';
@@ -1330,4 +1650,5 @@
         }
     </script>
 </body>
+
 </html>
