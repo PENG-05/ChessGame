@@ -974,106 +974,7 @@
             return null;
         }
         
-        // 判断移动到该位置是否可以阻止车吃子
-        function canBlockCarFromCapturing(simulatedPieces, newX, newY) {
-            const car = simulatedPieces.find(p => p.type === 'car');
-            if (!car) return false;
-            
-            // 获取车当前可以吃到的棋子
-            const capturablePieces = simulatedPieces.filter(p => 
-                p.type !== 'car' && 
-                (p.x === car.x || p.y === car.y) && 
-                !isSimulatedPathBlocked(simulatedPieces, car.x, car.y, p.x, p.y)
-            );
-            
-            // 检查移动后是否能阻挡车吃子
-            return capturablePieces.some(p => 
-                (p.x === car.x && newX === car.x && 
-                 ((p.y > car.y && newY > car.y && newY < p.y) || 
-                  (p.y < car.y && newY < car.y && newY > p.y))) ||
-                (p.y === car.y && newY === car.y && 
-                 ((p.x > car.x && newX > car.x && newX < p.x) || 
-                  (p.x < car.x && newX < car.x && newX > p.x)))
-            );
-        }
-        
-        // 计算位置得分 - 评估这个位置的战略价值
-        function getPositionScore(x, y) {
-            let score = 0;
-            
-            // 远离车得分更高
-            const distanceToCar = Math.abs(x - carPosition.x) + Math.abs(y - carPosition.y);
-            score += distanceToCar * 5;
-            
-            // 靠近边缘得分较低
-            if (x === 1 || x === 8 || y === 1 || y === 9) {
-                score -= 10;
-            }
-            
-            // 如果位置能控制多条线路，得分更高
-            const controlledLines = getControlledLines(x, y);
-            score += controlledLines * 15;
-            
-            return score;
-        }
-        
-        // 计算位置能控制多少条线路
-        function getControlledLines(x, y) {
-            let count = 0;
-            
-            // 检查水平线路上的棋子数量
-            const horizontalPieces = pieces.filter(p => p.y === y && p.x !== x);
-            count += horizontalPieces.length > 0 ? 1 : 0;
-            
-            // 检查垂直线路上的棋子数量
-            const verticalPieces = pieces.filter(p => p.x === x && p.y !== y);
-            count += verticalPieces.length > 0 ? 1 : 0;
-            
-            return count;
-        }
-        
-        // 检查车是否在危险中
-        function isCarInDanger() {
-            const car = pieces.find(p => p.type === 'car');
-            if (!car) return false;
-            
-            return pieces.some(piece => {
-                if (piece.type === 'car') return false;
-                
-                return canPieceAttack(piece, car.x, car.y);
-            });
-        }
-        
-        // 检查路径是否被阻挡
-        function isPathBlocked(fromX, fromY, toX, toY) {
-            // 水平移动
-            if (fromY === toY) {
-                const minX = Math.min(fromX, toX);
-                const maxX = Math.max(fromX, toX);
-                
-                for (let x = minX + 1; x < maxX; x++) {
-                    if (pieces.some(p => p.x === x && p.y === fromY)) {
-                        return true;
-                    }
-                }
-            }
-            
-            // 垂直移动
-            if (fromX === toX) {
-                const minY = Math.min(fromY, toY);
-                const maxY = Math.max(fromY, toY);
-                
-                for (let y = minY + 1; y < maxY; y++) {
-                    if (pieces.some(p => p.x === fromX && p.y === y)) {
-                        return true;
-                    }
-                }
-            }
-            
-            return false;
-        }
-        
-        // 获取车的安全移动位置 - 恢复为按照象棋规则计算
+        // 为棋子找一个更安全的位置
         function getSafeMovesForCar() {
             const car = pieces.find(p => p.type === 'car');
             if (!car) return [];
@@ -1106,260 +1007,102 @@
                         return false; // 可以吃掉这个棋子，所以仍然是安全的
                     }
                     
+                    // 特殊处理炮的威胁：检查移动后位置是否会被炮隔子攻击
+                    if (piece.type === 'cannon') {
+                        // 检查是否在同一直线上
+                        if (piece.x === move.x || piece.y === move.y) {
+                            // 计算中间有几个棋子
+                            let pieceCount = 0;
+                            
+                            // 临时移动车到目标位置进行检查
+                            const simulatedPieces = [...pieces];
+                            const carIndex = simulatedPieces.findIndex(p => p.type === 'car');
+                            simulatedPieces[carIndex].x = move.x;
+                            simulatedPieces[carIndex].y = move.y;
+                            
+                            if (piece.x === move.x) {
+                                // 在同一垂直线上
+                                const minY = Math.min(piece.y, move.y);
+                                const maxY = Math.max(piece.y, move.y);
+                                
+                                // 统计炮和目标位置之间的棋子数量
+                                for (let i = minY + 1; i < maxY; i++) {
+                                    if (simulatedPieces.some(p => p.x === move.x && p.y === i && p !== simulatedPieces[carIndex])) {
+                                        pieceCount++;
+                                    }
+                                }
+                            } else if (piece.y === move.y) {
+                                // 在同一水平线上
+                                const minX = Math.min(piece.x, move.x);
+                                const maxX = Math.max(piece.x, move.x);
+                                
+                                // 统计炮和目标位置之间的棋子数量
+                                for (let i = minX + 1; i < maxX; i++) {
+                                    if (simulatedPieces.some(p => p.x === i && p.y === move.y && p !== simulatedPieces[carIndex])) {
+                                        pieceCount++;
+                                    }
+                                }
+                            }
+                            
+                            // 如果中间只有一个棋子，炮可以攻击到车
+                            if (pieceCount === 1) {
+                                return true; // 此位置不安全
+                            }
+                        }
+                    }
+                    
                     // 检查移动后是否会被其他棋子攻击
                     return canPieceAttack(piece, move.x, move.y);
                 });
             });
         }
-        
-        // 检查棋子是否可以攻击指定坐标
-        function canPieceAttack(piece, x, y) {
-            switch(piece.type) {
-                case 'pawn': // 卒
-                    // 卒可以左右或上下走一步
-                    return Math.abs(piece.x - x) + Math.abs(piece.y - y) === 1;
+
+        // 检查车是否在危险中
+        function isCarInDanger() {
+            const car = pieces.find(p => p.type === 'car');
+            if (!car) return false;
+            
+            return pieces.some(piece => {
+                if (piece.type === 'car') return false;
                 
-                case 'rook': // 车
-                    // 车可以横竖直线走任意步数，但不能跳过其他棋子
-                    if ((piece.x === x || piece.y === y) && !isPathBlocked(piece.x, piece.y, x, y)) {
-                        return true;
-                    }
-                    return false;
-                
-                case 'knight': // 马
-                    // 马走日，但不能蹩马腿
-                    if ((Math.abs(piece.x - x) === 1 && Math.abs(piece.y - y) === 2) || 
-                        (Math.abs(piece.x - x) === 2 && Math.abs(piece.y - y) === 1)) {
-                        // 检查马腿
-                        const legX = piece.x + Math.sign(x - piece.x) * (Math.abs(piece.x - x) === 2 ? 1 : 0);
-                        const legY = piece.y + Math.sign(y - piece.y) * (Math.abs(piece.y - y) === 2 ? 1 : 0);
-                        
-                        if (pieces.some(p => p.x === legX && p.y === legY)) {
-                            return false; // 马腿被阻挡
-                        }
-                        return true;
-                    }
-                    return false;
-                
-                case 'cannon': // 炮
-                    // 炮走法与车相似，但吃子时需要一个炮架
-                    if (piece.x === x || piece.y === y) {
-                        // 计算路径上的棋子数
+                // 特殊判断炮对车的威胁
+                if (piece.type === 'cannon') {
+                    // 检查炮是否与车在同一直线
+                    if (piece.x === car.x || piece.y === car.y) {
+                        // 计算炮和车之间的棋子数量
                         let pieceCount = 0;
                         
-                        if (piece.x === x) {
-                            const minY = Math.min(piece.y, y);
-                            const maxY = Math.max(piece.y, y);
+                        if (piece.x === car.x) {
+                            // 在同一列
+                            const minY = Math.min(piece.y, car.y);
+                            const maxY = Math.max(piece.y, car.y);
                             
-                            for (let i = minY + 1; i < maxY; i++) {
-                                if (pieces.some(p => p.x === x && p.y === i)) {
+                            for (let y = minY + 1; y < maxY; y++) {
+                                if (pieces.some(p => p.x === car.x && p.y === y && p !== car && p !== piece)) {
                                     pieceCount++;
                                 }
                             }
-                        } else {
-                            const minX = Math.min(piece.x, x);
-                            const maxX = Math.max(piece.x, x);
+                        } else if (piece.y === car.y) {
+                            // 在同一行
+                            const minX = Math.min(piece.x, car.x);
+                            const maxX = Math.max(piece.x, car.x);
                             
-                            for (let i = minX + 1; i < maxX; i++) {
-                                if (pieces.some(p => p.x === i && p.y === y)) {
+                            for (let x = minX + 1; x < maxX; x++) {
+                                if (pieces.some(p => p.x === x && p.y === car.y && p !== car && p !== piece)) {
                                     pieceCount++;
                                 }
                             }
                         }
                         
-                        // 目标位置有棋子的情况：需要有且仅有一个炮架才能吃子
-                        const targetPiece = pieces.find(p => p.x === x && p.y === y);
-                        if (targetPiece) {
-                            return pieceCount === 1;
-                        } else {
-                            // 目标位置无棋子：行走时不能有任何棋子阻挡
-                            return pieceCount === 0;
+                        // 如果炮和车之间正好隔了一个棋子，炮可以攻击到车
+                        if (pieceCount === 1) {
+                            return true;
                         }
                     }
-                    return false;
-                
-                case 'bishop': // 象
-                    // 象走田，且不能过河
-                    if (Math.abs(piece.x - x) === 2 && Math.abs(piece.y - y) === 2) {
-                        // 检查象心
-                        const heartX = (piece.x + x) / 2;
-                        const heartY = (piece.y + y) / 2;
-                        
-                        if (pieces.some(p => p.x === heartX && p.y === heartY)) {
-                            return false; // 象心被阻挡
-                        }
-                        return true;
-                    }
-                    return false;
-                
-                case 'advisor': // 士
-                    // 士走斜线一格
-                    return Math.abs(piece.x - x) === 1 && Math.abs(piece.y - y) === 1;
-                
-                case 'king': // 将
-                    // 将走一格（横竖）
-                    return (Math.abs(piece.x - x) === 1 && piece.y === y) || 
-                           (Math.abs(piece.y - y) === 1 && piece.x === x);
-                
-                default:
-                    return false;
-            }
-        }
-        
-        // 用于模拟的路径阻挡检查
-        function isSimulatedPathBlocked(simulatedPieces, fromX, fromY, toX, toY) {
-            // 水平移动
-            if (fromY === toY) {
-                const minX = Math.min(fromX, toX);
-                const maxX = Math.max(fromX, toX);
-                
-                for (let x = minX + 1; x < maxX; x++) {
-                    if (simulatedPieces.some(p => p.x === x && p.y === fromY)) {
-                        return true;
-                    }
                 }
-            }
-            
-            // 垂直移动
-            if (fromX === toX) {
-                const minY = Math.min(fromY, toY);
-                const maxY = Math.max(fromY, toY);
                 
-                for (let y = minY + 1; y < maxY; y++) {
-                    if (simulatedPieces.some(p => p.x === fromX && p.y === y)) {
-                        return true;
-                    }
-                }
-            }
-            
-            return false;
-        }
-        
-        // 评估从起始位置开始连续吃子的最大路径（贪心算法）
-        function evaluateCapturePath(startPos, captureCount, simulatedPieces) {
-            // 移除目标位置的棋子
-            const targetIndex = simulatedPieces.findIndex(p => p.x === startPos.x && p.y === startPos.y && p.type !== 'car');
-            if (targetIndex === -1) {
-                return { maxCaptures: captureCount - 1, path: [startPos] };
-            }
-            
-            // 移除被吃的棋子
-            const capturedPiece = simulatedPieces[targetIndex];
-            simulatedPieces.splice(targetIndex, 1);
-            
-            // 找到车并移动到新位置
-            const carIndex = simulatedPieces.findIndex(p => p.type === 'car');
-            if (carIndex === -1) {
-                return { maxCaptures: captureCount - 1, path: [startPos] };
-            }
-            
-            const oldX = simulatedPieces[carIndex].x;
-            const oldY = simulatedPieces[carIndex].y;
-            simulatedPieces[carIndex].x = startPos.x;
-            simulatedPieces[carIndex].y = startPos.y;
-            
-            // 从当前位置寻找可以继续吃的子
-            const nextMoves = [];
-            
-            // 横向搜索
-            for (let x = 1; x <= 8; x++) {
-                if (x !== startPos.x && !isSimulatedPathBlocked(simulatedPieces, startPos.x, startPos.y, x, startPos.y)) {
-                    if (simulatedPieces.some(p => p.type !== 'car' && p.x === x && p.y === startPos.y)) {
-                        nextMoves.push({ x, y: startPos.y });
-                    }
-                }
-            }
-            
-            // 纵向搜索
-            for (let y = 1; y <= 9; y++) {
-                if (y !== startPos.y && !isSimulatedPathBlocked(simulatedPieces, startPos.x, startPos.y, startPos.x, y)) {
-                    if (simulatedPieces.some(p => p.type !== 'car' && p.x === startPos.x && p.y === y)) {
-                        nextMoves.push({ x: startPos.x, y });
-                    }
-                }
-            }
-            
-            if (nextMoves.length === 0) {
-                // 无法继续吃子，返回当前结果
-                return { maxCaptures: captureCount, path: [startPos] };
-            }
-            
-            // 递归评估每条路径，并选择最优的
-            let bestResult = { maxCaptures: captureCount, path: [startPos] };
-            
-            for (const nextMove of nextMoves) {
-                // 创建新的模拟棋盘状态
-                const newSimulatedPieces = [...simulatedPieces];
-                const result = evaluateCapturePath(nextMove, captureCount + 1, newSimulatedPieces);
-                
-                if (result.maxCaptures > bestResult.maxCaptures) {
-                    bestResult = result;
-                    bestResult.path.unshift(startPos);
-                }
-            }
-            
-            // 还原车的位置（为后续可能的递归调用准备）
-            simulatedPieces[carIndex].x = oldX;
-            simulatedPieces[carIndex].y = oldY;
-            
-            return bestResult;
-        }
-        
-        // 为移动设备设置触摸事件处理
-        function setupMobileTouchHandlers() {
-            // 只在移动设备上运行此代码
-            if (!isMobileDevice) return;
-            
-            console.log("设置移动端触摸处理");
-            
-            // 更新游戏状态提示
-            gameStatus.textContent = "移动设备模式：点击棋子选中，再点击目标位置移动";
-            
-            // 移除所有棋子的拖拽属性，强制使用点击模式
-            document.querySelectorAll('.piece').forEach(piece => {
-                piece.draggable = false;
+                return canPieceAttack(piece, car.x, car.y);
             });
-        }
-        
-        // 移动端：处理棋子点击
-        function handleMobilePieceClick(piece) {
-            if (isDeleteMode) return;
-            
-            // 如果有选中的棋子，并且是车，且点击了另一个棋子，应该尝试吃子
-            if (selectedPiece && selectedPiece.type === 'car' && piece !== selectedPiece) {
-                // 检查车是否可以移动到该棋子位置
-                if (isValidCarMove(selectedPiece.x, selectedPiece.y, piece.x, piece.y)) {
-                    // 触发选择单元格的逻辑，执行吃子
-                    selectCell(piece.x, piece.y);
-                    return;
-                } else {
-                    gameStatus.textContent = "无法吃掉该棋子！车只能直线移动且不能越过其他棋子";
-                    return;
-                }
-            }
-            
-            // 常规的选择棋子逻辑
-            console.log("移动端点击棋子:", piece);
-            
-            // 取消之前的选择，如果点击的是同一个棋子
-            if (selectedPiece === piece) {
-                selectedPiece = null;
-                renderPieces();
-                gameStatus.textContent = "已取消选择";
-                return;
-            }
-            
-            // 如果点击的是新棋子
-            selectedPiece = piece;
-            renderPieces();
-            
-            // 更新状态提示
-            gameStatus.textContent = `已选中${getPieceSymbol(piece.type)}，请点击目标位置移动`;
-            
-            // 如果是车，显示可能的移动位置
-            if (piece.type === 'car') {
-                showPossibleMoves();
-            }
         }
         
         // 添加新棋子
@@ -1584,332 +1327,6 @@
         if (isMobileDevice) {
             document.getElementById('mobileControls').style.display = 'block';
             console.log("检测到移动设备，启用触摸控制");
-        }
-
-        // 计算车的最佳移动 - 更新策略，应对动态棋局
-        function calculateBestMoveForCar() {
-            // 按照象棋规则获取车的安全移动位置
-            const safeMoves = getSafeMovesForCar();
-            
-            if (safeMoves.length === 0) {
-                resultArea.innerHTML = '<h3>车的最佳移动</h3><p>没有安全的移动位置！游戏结束。</p>';
-                gameStatus.textContent = '没有安全的移动位置！游戏结束。';
-                return;
-            }
-            
-            // 将移动评分与决策过程进行彻底改进
-            // 1. 先评估每个可能的移动
-            const evaluatedMoves = safeMoves.map(move => {
-                // 创建移动评估对象
-                const evaluation = {
-                    move: move,
-                    // 记录此位置是否可以立即吃子
-                    canCaptureNow: false,
-                    // 存储可能被吃掉的棋子
-                    targetPiece: null,
-                    // 评分初始化为0
-                    score: 0,
-                    // 吃子路径
-                    capturePath: [],
-                    // 立即吃子的价值（不同棋子有不同价值）
-                    immediateValue: 0,
-                    // 未来位置价值
-                    positionValue: 0,
-                    // 逃脱威胁价值
-                    safetyValue: 0,
-                    // 创造多吃机会价值
-                    opportunityValue: 0
-                };
-                
-                // 检查是否可以立即吃子
-                const targetPiece = pieces.find(p => p.type !== 'car' && p.x === move.x && p.y === move.y);
-                if (targetPiece) {
-                    evaluation.canCaptureNow = true;
-                    evaluation.targetPiece = targetPiece;
-                    
-                    // 棋子价值评分（不同棋子价值不同）
-                    evaluation.immediateValue = getPieceValue(targetPiece.type) * 100;
-                    
-                    // 如果可以连续吃子，计算最佳路径
-                    const capturePathResult = evaluateCapturePath(move, 1, [...pieces]);
-                    evaluation.capturePath = capturePathResult.path;
-                    
-                    // 连续吃子的价值（比单个吃子更高）
-                    if (capturePathResult.maxCaptures > 1) {
-                        evaluation.opportunityValue += (capturePathResult.maxCaptures - 1) * 50;
-                    }
-                }
-                
-                // 模拟车移动到新位置，计算位置优势
-                const simulatedPieces = [...pieces];
-                const carIndex = simulatedPieces.findIndex(p => p.type === 'car');
-                const oldX = simulatedPieces[carIndex].x;
-                const oldY = simulatedPieces[carIndex].y;
-                simulatedPieces[carIndex].x = move.x;
-                simulatedPieces[carIndex].y = move.y;
-                
-                // 评估此位置控制了多少条线路（横向和纵向）
-                let controlledLines = 0;
-                let threatenedPieces = 0;
-                let minDistanceToTarget = Infinity;
-                
-                // 计算该位置能"看到"多少棋子（处于同一行或列且无阻挡）
-                simulatedPieces.forEach(p => {
-                    if (p.type !== 'car') {
-                        // 检查车能否威胁到这个棋子
-                        const onSameLine = (p.x === move.x || p.y === move.y);
-                        const notBlocked = !isSimulatedPathBlocked(simulatedPieces, move.x, move.y, p.x, p.y);
-                        
-                        if (onSameLine && notBlocked) {
-                            threatenedPieces++;
-                            
-                            // 增加控制线路数
-                            if (p.x === move.x) controlledLines++;
-                            if (p.y === move.y) controlledLines++;
-                        }
-                        
-                        // 计算到最近棋子的距离
-                        const distance = Math.abs(move.x - p.x) + Math.abs(move.y - p.y);
-                        minDistanceToTarget = Math.min(minDistanceToTarget, distance);
-                    }
-                });
-                
-                // 还原车的位置
-                simulatedPieces[carIndex].x = oldX;
-                simulatedPieces[carIndex].y = oldY;
-                
-                // 计算位置价值（控制线路与威胁棋子）
-                evaluation.positionValue = 20 * controlledLines + 30 * threatenedPieces;
-                
-                // 如果没有威胁棋子，则考虑靠近棋子
-                if (threatenedPieces === 0 && minDistanceToTarget < Infinity) {
-                    evaluation.positionValue += (10 - Math.min(minDistanceToTarget, 9)) * 5;
-                }
-                
-                // 评估安全价值 - 远离危险棋子
-                const dangerousPieces = pieces.filter(p => 
-                    p.type !== 'car' && 
-                    (p.type === 'rook' || p.type === 'cannon' || p.type === 'knight')
-                );
-                
-                // 计算从该位置逃离危险棋子的价值
-                dangerousPieces.forEach(p => {
-                    // 计算当前与该危险棋子的距离
-                    const currentDistance = Math.abs(oldX - p.x) + Math.abs(oldY - p.y);
-                    // 计算移动后与该危险棋子的距离
-                    const newDistance = Math.abs(move.x - p.x) + Math.abs(move.y - p.y);
-                    
-                    // 如果距离变大，增加安全价值
-                    if (newDistance > currentDistance) {
-                        evaluation.safetyValue += 5 * (newDistance - currentDistance);
-                    }
-                });
-                
-                // 考虑长期战略 - 避免死局
-                const deathTrapValue = evaluateDeathTrapRisk(move, simulatedPieces);
-                evaluation.deathTrapValue = deathTrapValue;
-                
-                // 考虑未来几步的胜率
-                const futureWinRateValue = evaluateFutureWinRate(move, simulatedPieces);
-                evaluation.futureWinRateValue = futureWinRateValue;
-                
-                // 调整总评分计算，将长期战略纳入考量
-                evaluation.score = 
-                    evaluation.immediateValue + 
-                    evaluation.opportunityValue + 
-                    evaluation.positionValue + 
-                    evaluation.safetyValue +
-                    evaluation.deathTrapValue +
-                    evaluation.futureWinRateValue;
-                
-                return evaluation;
-            });
-            
-            // 2. 根据评分排序
-            evaluatedMoves.sort((a, b) => b.score - a.score);
-            
-            // 3. 选择最优移动
-            const bestEvaluation = evaluatedMoves[0];
-            
-            // 4. 显示决策结果
-            if (bestEvaluation.canCaptureNow) {
-                // 能立即吃子的情况
-                const pathStr = bestEvaluation.capturePath.map(pos => `(${pos.x},${pos.y})`).join(' → ');
-                const captureCount = bestEvaluation.capturePath.length;
-                
-                resultArea.innerHTML = `
-                    <h3>车的最佳移动</h3>
-                    <p>最佳移动位置: <span style="font-weight: bolder;font-size:18px">(${bestEvaluation.move.x}, ${bestEvaluation.move.y})</span></p>
-                    <p>可以吃掉: ${getPieceSymbol(bestEvaluation.targetPiece.type)}</p>
-                    <p>评分: ${bestEvaluation.score}</p>
-                    <p>此移动优势:
-                    <ul>
-                        ${bestEvaluation.immediateValue > 0 ? `<li>立即吃掉棋子 (+${bestEvaluation.immediateValue})</li>` : ''}
-                        ${bestEvaluation.opportunityValue > 0 ? `<li>可能连续吃子 (+${bestEvaluation.opportunityValue})</li>` : ''}
-                        ${bestEvaluation.positionValue > 0 ? `<li>获得良好位置 (+${bestEvaluation.positionValue})</li>` : ''}
-                        ${bestEvaluation.safetyValue > 0 ? `<li>提高安全性 (+${bestEvaluation.safetyValue})</li>` : ''}
-                        ${bestEvaluation.deathTrapValue > 0 ? `<li>降低死局风险 (+${bestEvaluation.deathTrapValue})</li>` : ''}
-                        ${bestEvaluation.futureWinRateValue > 0 ? `<li>提高未来胜率 (+${bestEvaluation.futureWinRateValue})</li>` : ''}
-                    </ul>
-                    </p>
-                    ${captureCount > 1 ? `<p>最佳吃子路径: ${pathStr}</p>` : ''}
-                    <p>已移动 ${moveCount} 步, ${moveCount % 3 === 0 ? '下次将增加新棋子' : `还有 ${3 - (moveCount % 3)} 步增加新棋子`}</p>
-                `;
-                
-                const statusText = `车的最佳移动: (${bestEvaluation.move.x}, ${bestEvaluation.move.y}) - 吃掉 ${getPieceSymbol(bestEvaluation.targetPiece.type)}`;
-                gameStatus.textContent = captureCount > 1 ? 
-                    `${statusText}，如果布局不变可连续吃子` : statusText;
-            } else {
-                // 无法立即吃子的情况
-                resultArea.innerHTML = `
-                    <h3>车的最佳移动</h3>
-                    <p>最佳移动位置: (${bestEvaluation.move.x}, ${bestEvaluation.move.y})</p>
-                    <p>评分: ${bestEvaluation.score}</p>
-                    <p>此移动优势:
-                    <ul>
-                        ${bestEvaluation.positionValue > 0 ? `<li>获得良好位置 (+${bestEvaluation.positionValue})</li>` : ''}
-                        ${bestEvaluation.safetyValue > 0 ? `<li>提高安全性 (+${bestEvaluation.safetyValue})</li>` : ''}
-                        ${bestEvaluation.deathTrapValue > 0 ? `<li>降低死局风险 (+${bestEvaluation.deathTrapValue})</li>` : ''}
-                        ${bestEvaluation.futureWinRateValue > 0 ? `<li>提高未来胜率 (+${bestEvaluation.futureWinRateValue})</li>` : ''}
-                    </ul>
-                    </p>
-                    <p>此位置可控制更多棋子，为未来吃子创造条件</p>
-                    <p>已移动 ${moveCount} 步, ${moveCount % 3 === 0 ? '下次将增加新棋子' : `还有 ${3 - (moveCount % 3)} 步增加新棋子`}</p>
-                `;
-                
-                gameStatus.textContent = `车的最佳移动: (${bestEvaluation.move.x}, ${bestEvaluation.move.y}) - 战略位置，可控制更多区域`;
-            }
-            
-            // 高亮显示最佳移动位置
-            document.querySelectorAll('.cell').forEach(c => c.classList.remove('move-suggestion'));
-            const cell = findCell(bestEvaluation.move.x, bestEvaluation.move.y);
-            if (cell) {
-                cell.classList.add('move-suggestion');
-            }
-        }
-        
-        // 获取棋子的价值
-        function getPieceValue(type) {
-            switch(type) {
-                case 'king': return 10;    // 将/帅
-                case 'rook': return 9;     // 对方的车
-                case 'cannon': return 7;   // 炮
-                case 'knight': return 6;   // 马
-                case 'bishop': return 4;   // 象
-                case 'advisor': return 4;  // 士
-                case 'pawn': return 2;     // 卒/兵
-                default: return 1;
-            }
-        }
-        
-        // 评估死局风险 - 返回值为正表示降低死局风险
-        function evaluateDeathTrapRisk(move, simulatedPieces) {
-            // 模拟车移动到这个位置
-            const carIndex = simulatedPieces.findIndex(p => p.type === 'car');
-            const oldX = simulatedPieces[carIndex].x;
-            const oldY = simulatedPieces[carIndex].y;
-            simulatedPieces[carIndex].x = move.x;
-            simulatedPieces[carIndex].y = move.y;
-            
-            // 检查移动后是否还有出路
-            const exits = countExits(simulatedPieces);
-            
-            // 还原车的位置
-            simulatedPieces[carIndex].x = oldX;
-            simulatedPieces[carIndex].y = oldY;
-            
-            // 如果出路少于2条，这是潜在的死局风险
-            if (exits < 2) {
-                return -100; // 高风险，大幅降低评分
-            } else if (exits < 4) {
-                return -30; // 中等风险
-            } else {
-                return Math.min(exits * 5, 30); // 出路越多，评分越高，但设置上限
-            }
-        }
-        
-        // 计算车在当前位置的出路数量
-        function countExits(simulatedPieces) {
-            const car = simulatedPieces.find(p => p.type === 'car');
-            if (!car) return 0;
-            
-            let count = 0;
-            
-            // 检查四个方向
-            const directions = [{dx:0,dy:1}, {dx:0,dy:-1}, {dx:1,dy:0}, {dx:-1,dy:0}];
-            
-            for (const {dx, dy} of directions) {
-                // 检查这个方向是否有通路
-                let hasPath = false;
-                for (let i = 1; i <= 9; i++) {
-                    const checkX = car.x + dx * i;
-                    const checkY = car.y + dy * i;
-                    
-                    // 确保位置在棋盘范围内
-                    if (checkX < 1 || checkX > 8 || checkY < 1 || checkY > 9) {
-                        break;
-                    }
-                    
-                    // 检查这个位置是否有棋子
-                    const pieceAtCheck = simulatedPieces.find(p => p.x === checkX && p.y === checkY);
-                    if (pieceAtCheck) {
-                        if (pieceAtCheck.type !== 'car') {
-                            // 如果有敌方棋子，这是一个可以吃子的路径
-                            hasPath = true;
-                        }
-                        break;
-                    } else {
-                        // 如果是空位，这是一个可通行的路径
-                        hasPath = true;
-                    }
-                }
-                
-                if (hasPath) {
-                    count++;
-                }
-            }
-            
-            return count;
-        }
-        
-        // 评估未来几步的胜率
-        function evaluateFutureWinRate(move, simulatedPieces) {
-            // 如果是第3步的倍数，要考虑即将新增棋子的影响
-            if ((moveCount + 1) % 3 === 0) {
-                return 50; // 鼓励在新增棋子前尽量吃掉现有棋子
-            }
-            
-            // 判断这个位置在未来是否有更多吃子机会
-            const futureTargets = countFutureTargets(move, simulatedPieces);
-            
-            return futureTargets * 15; // 每个潜在目标增加15分
-        }
-        
-        // 计算位置周围有多少潜在的吃子目标
-        function countFutureTargets(move, simulatedPieces) {
-            let count = 0;
-            
-            // 水平方向
-            for (let x = 1; x <= 8; x++) {
-                if (x !== move.x) {
-                    const pieceAt = simulatedPieces.find(p => p.x === x && p.y === move.y && p.type !== 'car');
-                    if (pieceAt && !isSimulatedPathBlocked(simulatedPieces, move.x, move.y, x, move.y)) {
-                        count++;
-                    }
-                }
-            }
-            
-            // 垂直方向
-            for (let y = 1; y <= 9; y++) {
-                if (y !== move.y) {
-                    const pieceAt = simulatedPieces.find(p => p.x === move.x && p.y === y && p.type !== 'car');
-                    if (pieceAt && !isSimulatedPathBlocked(simulatedPieces, move.x, move.y, move.x, y)) {
-                        count++;
-                    }
-                }
-            }
-            
-            return count;
         }
     </script>
 </body>
