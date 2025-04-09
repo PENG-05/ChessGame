@@ -873,7 +873,7 @@
                             gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
                             setTimeout(() => {
                                 alert('车进入了敌方棋子的攻击范围，游戏结束！');
-                                initBoard();
+                                // initBoard();
                             }, 100);
                             return;
                         }
@@ -1269,7 +1269,7 @@
                                 gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
                                 setTimeout(() => {
                                     alert('车进入了敌方棋子的攻击范围，游戏结束！');
-                                    initBoard();
+                                    // initBoard();
                                 }, 100);
                                 selectedPiece = null;
                                 renderPieces();
@@ -1396,7 +1396,7 @@
                 gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
                 setTimeout(() => {
                     alert('车进入了敌方棋子的攻击范围，游戏结束！');
-                    initBoard();
+                    // initBoard();
                 }, 100);
                 return;
             }
@@ -1596,6 +1596,13 @@
             const car = pieces.find(p => p.type === 'car');
             if (!car) return false;
 
+            // 直接检查当前车位置是否在危险区域中
+            const dangerZones = getDangerZones();
+            if (dangerZones.some(zone => zone.x === car.x && zone.y === car.y)) {
+                return true;
+            }
+
+            // 原有逻辑作为额外检查
             return pieces.some(piece => {
                 if (piece.type === 'car') return false;
 
