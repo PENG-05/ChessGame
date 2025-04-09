@@ -764,7 +764,7 @@
             // 如果是车，更新车的位置
             if (draggedPiece.type === 'car') {
                 carPosition = { x: targetX, y: targetY };
-                
+
                 // 检查车是否进入危险区域
                 if (isCarInDanger()) {
                     gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
@@ -1311,13 +1311,13 @@
                             selectedPiece.x = x;
                             selectedPiece.y = y;
                             carPosition = { x, y };
-                            
+
                             // 清除选择状态
                             selectedPiece = null;
-                            
+
                             // 重绘棋盘
                             renderPieces();
-                            
+
                             // 检查车是否安全
                             if (isCarInDanger()) {
                                 gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
@@ -1326,9 +1326,9 @@
                                 }, 100);
                                 return;
                             }
-                            
+
                             gameStatus.textContent = `车移动到坐标 (${x}, ${y})`;
-                            
+
                             // 重新计算最佳移动
                             setTimeout(calculateBestMoveForCar, 500);
                             return;
@@ -1930,6 +1930,32 @@
             document.getElementById('mobileControls').style.display = 'block';
             console.log("检测到移动设备，启用触摸控制");
         }
+    </script>
+     <script>
+        // 添加禁用F12和右键菜单的代码
+        document.addEventListener('keydown', function (e) {
+            // 禁用 F12
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+
+            // 禁用 Ctrl+Shift+I (Chrome开发者工具快捷键)
+            if ((e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
+                // 禁用 Ctrl+Shift+J (Chrome控制台)
+                (e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
+                // 禁用 Ctrl+U (查看源代码)
+                (e.ctrlKey && e.keyCode === 85)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // 禁用右键菜单
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+            return false;
+        });
     </script>
 </body>
 
