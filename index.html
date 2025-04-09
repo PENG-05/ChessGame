@@ -362,6 +362,10 @@
         .pay-img {
             display: flex;
             justify-content: space-around;
+            @media (max-width: 768px) {
+                flex-direction: column;
+                align-items: center;
+            }
         }
 
         .pay-img img {
