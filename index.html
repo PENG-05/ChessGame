@@ -1440,7 +1440,7 @@
             return document.querySelector(`.cell[data-x="${x}"][data-y="${y}"]`);
         }
 
-        // 选择单元格 - 支持移动端
+        // 选择单元格 - 移除自动移动车的逻辑
         function selectCell(x, y) {
             // 如果处于删除模式，点击空格子不做任何操作
             if (isDeleteMode) {
@@ -1454,116 +1454,14 @@
                 if (piece) {
                     // 如果已经有选中的棋子，并且它是车，则尝试吃子
                     if (selectedPiece && selectedPiece.type === 'car') {
-                        // 检查车是否可以移动到该位置吃子
-                        if (isValidCarMove(selectedPiece.x, selectedPiece.y, x, y)) {
-                            // 检查是否吃掉了将
-                            const isKing = piece.type === 'king';
-                            
-                            // 吃掉棋子
-                            pieces = pieces.filter(p => p !== piece);
-                            gameStatus.textContent = `吃掉了 ${getPieceSymbol(piece.type)} 在坐标 (${x}, ${y})`;
-                            
-                            if (isKing) {
-                                kingCaptured = true;
-                                kingCapturedPosition = { x, y };
-                                gameStatus.textContent += "，下一步将消除该位置所在的行和列上的所有棋子！";
-                            }
-
-                            // 播放吃子动画
-                            const cell = findCell(x, y);
-                            if (cell) {
-                                cell.classList.add('captured');
-                                setTimeout(() => cell.classList.remove('captured'), 500);
-                            }
-
-                            // 移动车
-                            selectedPiece.x = x;
-                            selectedPiece.y = y;
-                            carPosition = { x, y };
-
-                            // 清除选择状态
-                            selectedPiece = null;
-
-                            // 重绘棋盘
-                            renderPieces();
-
-                            // 检查游戏状态
-                            if (isCarInDanger()) {
-                                gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
-                                setTimeout(() => {
-                                    alert('车进入了敌方棋子的攻击范围，游戏结束！');
-                                }, 100);
-                                return;
-                            }
-
-                            // 移动成功提示
-                            if (!isKing) {
-                                gameStatus.textContent = `车吃掉了 ${getPieceSymbol(piece.type)} 移动到 (${x}, ${y})`;
-                            }
-
-                            // 重新计算最佳移动
-                            setTimeout(calculateBestMoveForCar, 500);
-                            return;
-                        } else {
-                            gameStatus.textContent = "无法吃掉该棋子！车只能直线移动且不能越过其他棋子";
-                            return;
-                        }
+                        // ...existing code...
                     }
                     else {
                         // 如果没有选中棋子，或选中的不是车，则选择点击的棋子
                         handleMobilePieceClick(piece);
                     }
                 } else if (selectedPiece) {
-                    // 空单元格且有选中棋子，尝试移动
-                    if (selectedPiece.type === 'car') {
-                        // 检查是否可以移动到该位置
-                        if (isValidCarMove(selectedPiece.x, selectedPiece.y, x, y)) {
-                            // 检查是否需要执行行列消除
-                            const shouldClearRowColumn = kingCaptured;
-                            
-                            // 移动车
-                            selectedPiece.x = x;
-                            selectedPiece.y = y;
-                            carPosition = { x, y };
-                            
-                            // 如果上一步吃掉了将，这一步需要消除行列
-                            if (shouldClearRowColumn && kingCapturedPosition) {
-                                clearRowAndColumn(x, y);
-                                kingCaptured = false; // 重置状态
-                                kingCapturedPosition = null;
-                            }
-
-                            // 清除选择状态
-                            selectedPiece = null;
-
-                            // 重绘棋盘
-                            renderPieces();
-
-                            // 检查车是否安全
-                            if (isCarInDanger()) {
-                                gameStatus.textContent = '车进入了敌方棋子的攻击范围，游戏结束！';
-                                setTimeout(() => {
-                                    alert('车进入了敌方棋子的攻击范围，游戏结束！');
-                                }, 100);
-                                return;
-                            }
-
-                            gameStatus.textContent = `车移动到坐标 (${x}, ${y})`;
-                            if (shouldClearRowColumn) {
-                                gameStatus.textContent += "，已消除该位置所在的行和列上的所有棋子！";
-                            }
-
-                            // 重新计算最佳移动
-                            setTimeout(calculateBestMoveForCar, 500);
-                            return;
-                        } else {
-                            gameStatus.textContent = "无法移动到该位置！车只能直线移动且不能越过其他棋子";
-                            return;
-                        }
-                    } else {
-                        // 其他棋子的移动逻辑...
-                        // 可以根据需要添加其他棋子的移动实现
-                    }
+                    // ...existing code...
                 }
             } else {
                 const piece = pieces.find(p => p.x === x && p.y === y);
@@ -1575,34 +1473,23 @@
                     // 如果点击的是其他棋子
                     gameStatus.textContent = `选中的棋子: ${getPieceSymbol(piece.type)} 在坐标 (${x}, ${y})，拖拽可以移动它`;
                 } else {
-                    // 如果是空单元格，尝试移动车
-                    const car = pieces.find(p => p.type === 'car');
-                    if (car && isValidCarMove(car.x, car.y, x, y)) {
-                        // 检查是否有棋子在目标位置
-                        const targetPiece = pieces.find(p => p.x === x && p.y === y);
-                        if (targetPiece) {
-                            // 如果有棋子，则吃掉它
-                            pieces = pieces.filter(p => p !== targetPiece);
-                            gameStatus.textContent = `吃掉了 ${getPieceSymbol(targetPiece.type)} 在坐标 (${x}, ${y})`;
-
-                            // 播放吃子动画
-                            const cell = findCell(x, y);
-                            if (cell) {
-                                cell.classList.add('captured');
-                                setTimeout(() => cell.classList.remove('captured'), 500);
-                            }
-                        }
-
-                        moveCarTo(x, y);
-
-                        // 自动计算下一步最佳移动
-                        setTimeout(calculateBestMoveForCar, 500);
+                    // 空单元格点击 - 只显示信息，不再自动移动车
+                    gameStatus.textContent = `已选择坐标 (${x}, ${y})`;
+                    
+                    // 高亮显示选中的单元格
+                    document.querySelectorAll('.cell').forEach(cell => {
+                        cell.classList.remove('selected');
+                    });
+                    const selectedCell = findCell(x, y);
+                    if (selectedCell) {
+                        selectedCell.classList.add('selected');
+                        setTimeout(() => selectedCell.classList.remove('selected'), 1000);
                     }
                 }
             }
         }
 
-        // 显示车可能的移动位置
+        // 显示车可能的移动位置，但不自动移动
         function showPossibleMoves() {
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('move-suggestion'));
 
