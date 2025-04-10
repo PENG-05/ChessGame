@@ -391,7 +391,7 @@
 
 <body>
     <h1>车棋游戏</h1>
-    <p>规则: 您操控一个车(红色)，对方有多种象棋棋子。车可以横竖直线移动，需要避开对方棋子的攻击范围。每回合击杀一个棋子，游戏继续。</p>
+    <p>规则: 您操控一个车(红色)，对方有多种象棋棋子。车可以横竖直线移动，需要避开对方棋子的攻击范围。每回合击杀一个棋子，游戏继续。特殊规则：车吃掉将后，下一步会消除该点所在行列的所有棋子。</p>
 
     <div class="game-status" id="gameStatus">游戏状态：拖拽棋子可以移动它们。移动后系统会自动计算车的最佳移动位置。</div>
 
@@ -491,6 +491,10 @@
         let moveCount = 0; // 记录车已经移动的步数
         let difficultyLevel = 'normal'; // 难度级别: easy, normal, hard
         let boardHistory = []; // 存储棋盘历史状态
+
+        // 全局变量，记录车是否吃掉了将，用于下一步消除行列
+        let kingCaptured = false;
+        let kingCapturedPosition = null;
 
         // 初始化棋盘
         function initBoard() {
@@ -752,8 +756,18 @@
 
             // 如果是车并且目标位置有其他棋子，则吃掉它
             if (draggedPiece.type === 'car' && targetPiece) {
+                // 检查是否吃掉了将
+                const isKing = targetPiece.type === 'king';
+                
                 pieces = pieces.filter(p => p !== targetPiece);
                 gameStatus.textContent = `吃掉了 ${getPieceSymbol(targetPiece.type)} 在坐标 (${targetX}, ${targetY})`;
+                
+                if (isKing) {
+                    kingCaptured = true;
+                    kingCapturedPosition = { x: targetX, y: targetY };
+                    gameStatus.textContent += "，下一步车移动后将消除该位置所在的行和列上的所有棋子！";
+                }
+                
                 // 播放吃子动画
                 this.classList.add('captured');
                 setTimeout(() => this.classList.remove('captured'), 500);
@@ -769,6 +783,13 @@
             // 如果是车，更新车的位置
             if (draggedPiece.type === 'car') {
                 carPosition = { x: targetX, y: targetY };
+                
+                // 检查是否需要执行行列消除（如果上一步吃掉了将）
+                if (kingCaptured && kingCapturedPosition) {
+                    clearRowAndColumn(targetX, targetY); // 消除当前位置所在的行和列
+                    kingCaptured = false; // 重置标记
+                    kingCapturedPosition = null;
+                }
 
                 // 检查车是否进入危险区域
                 if (isCarInDanger()) {
@@ -1258,9 +1279,18 @@
                     if (selectedPiece && selectedPiece.type === 'car') {
                         // 检查车是否可以移动到该位置吃子
                         if (isValidCarMove(selectedPiece.x, selectedPiece.y, x, y)) {
+                            // 检查是否吃掉了将
+                            const isKing = piece.type === 'king';
+                            
                             // 吃掉棋子
                             pieces = pieces.filter(p => p !== piece);
                             gameStatus.textContent = `吃掉了 ${getPieceSymbol(piece.type)} 在坐标 (${x}, ${y})`;
+                            
+                            if (isKing) {
+                                kingCaptured = true;
+                                kingCapturedPosition = { x, y };
+                                gameStatus.textContent += "，下一步将消除该位置所在的行和列上的所有棋子！";
+                            }
 
                             // 播放吃子动画
                             const cell = findCell(x, y);
@@ -1290,7 +1320,9 @@
                             }
 
                             // 移动成功提示
-                            gameStatus.textContent = `车吃掉了 ${getPieceSymbol(piece.type)} 移动到 (${x}, ${y})`;
+                            if (!isKing) {
+                                gameStatus.textContent = `车吃掉了 ${getPieceSymbol(piece.type)} 移动到 (${x}, ${y})`;
+                            }
 
                             // 重新计算最佳移动
                             setTimeout(calculateBestMoveForCar, 500);
@@ -1309,10 +1341,19 @@
                     if (selectedPiece.type === 'car') {
                         // 检查是否可以移动到该位置
                         if (isValidCarMove(selectedPiece.x, selectedPiece.y, x, y)) {
+                            // 检查是否需要执行行列消除
+                            const shouldClearRowColumn = kingCaptured;
+                            
                             // 移动车
                             selectedPiece.x = x;
                             selectedPiece.y = y;
                             carPosition = { x, y };
+                            
+                            // 如果上一步吃掉了将，这一步需要消除行列
+                            if (shouldClearRowColumn && kingCapturedPosition) {
+                                clearRowAndColumn(x, y);
+                                kingCaptured = false; // 重置状态
+                            }
 
                             // 清除选择状态
                             selectedPiece = null;
@@ -1330,6 +1371,9 @@
                             }
 
                             gameStatus.textContent = `车移动到坐标 (${x}, ${y})`;
+                            if (shouldClearRowColumn) {
+                                gameStatus.textContent += "，已消除该位置所在的行和列上的所有棋子！";
+                            }
 
                             // 重新计算最佳移动
                             setTimeout(calculateBestMoveForCar, 500);
@@ -1344,7 +1388,8 @@
                     }
                 }
             } else {
-                // 桌面端原有逻辑
+                const piece = pieces.find(p => p.x === x && p.y === y);
+
                 if (piece && piece.type === 'car') {
                     // 如果点击的是车，显示可能的移动位置
                     showPossibleMoves();
@@ -1401,13 +1446,26 @@
             const carPiece = pieces.find(p => p.type === 'car');
             if (!carPiece) return;
 
+            // 检查是否需要执行行列消除
+            const shouldClearRowColumn = kingCaptured;
+
             // 检查目标位置是否有棋子
             const targetPiece = pieces.find(p => p.x === x && p.y === y);
             if (targetPiece) {
                 // 如果是敌方棋子，吃掉它（从棋盘上移除）
                 if (targetPiece.type !== 'car') {
+                    // 检查是否吃掉了将
+                    const isKing = targetPiece.type === 'king';
+                    
                     pieces = pieces.filter(p => p !== targetPiece);
                     gameStatus.textContent = `吃掉了 ${getPieceSymbol(targetPiece.type)} 在坐标 (${x}, ${y})`;
+                    
+                    if (isKing) {
+                        kingCaptured = true;
+                        kingCapturedPosition = { x, y };
+                        gameStatus.textContent += "，下一步将消除该位置所在的行和列上的所有棋子！";
+                    }
+                    
                     // 播放一个简单的吃子动画效果
                     const targetCell = findCell(targetPiece.x, targetPiece.y);
                     if (targetCell) {
@@ -1421,6 +1479,12 @@
             carPiece.x = x;
             carPiece.y = y;
             carPosition = { x, y };
+            
+            // 如果上一步吃掉了将，这一步需要消除行列
+            if (shouldClearRowColumn) {
+                clearRowAndColumn(x, y);
+                kingCaptured = false; // 重置状态
+            }
 
             // 增加移动计数
             moveCount++;
@@ -1931,6 +1995,43 @@
         if (isMobileDevice) {
             document.getElementById('mobileControls').style.display = 'block';
             console.log("检测到移动设备，启用触摸控制");
+        }
+
+        // 添加新函数: 消除指定行和列上的所有棋子
+        function clearRowAndColumn(x, y) {
+            // 记录消除前的棋子数量
+            const beforeCount = pieces.length;
+            
+            // 过滤掉该行和该列上的所有非车棋子
+            pieces = pieces.filter(p => {
+                // 保留车
+                if (p.type === 'car') return true;
+                
+                // 如果棋子在同一行或同一列上，将其移除
+                if (p.x === x || p.y === y) {
+                    return false;
+                }
+                return true;
+            });
+            
+            // 计算消除的棋子数量
+            const removedCount = beforeCount - pieces.length;
+            
+            // 更新游戏状态信息
+            if (removedCount > 0) {
+                gameStatus.textContent = `消除了${removedCount}个棋子！位置(${x}, ${y})所在的行和列已清空。`;
+                
+                // 播放消除动画 (可以添加一个整行整列的动画效果)
+                // 高亮显示被消除的行和列
+                document.querySelectorAll('.cell').forEach(cell => {
+                    const cellX = parseInt(cell.dataset.x);
+                    const cellY = parseInt(cell.dataset.y);
+                    if (cellX === x || cellY === y) {
+                        cell.classList.add('captured');
+                        setTimeout(() => cell.classList.remove('captured'), 800);
+                    }
+                });
+            }
         }
     </script>
     <script>
