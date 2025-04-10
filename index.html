@@ -785,7 +785,7 @@
                 carPosition = { x: targetX, y: targetY };
                 
                 // 检查是否需要执行行列消除（如果上一步吃掉了将）
-                if (kingCaptured && kingCapturedPosition) {
+                if (kingCaptured) {
                     clearRowAndColumn(targetX, targetY); // 消除当前位置所在的行和列
                     kingCaptured = false; // 重置标记
                     kingCapturedPosition = null;
@@ -1530,6 +1530,7 @@
                             if (shouldClearRowColumn && kingCapturedPosition) {
                                 clearRowAndColumn(x, y);
                                 kingCaptured = false; // 重置状态
+                                kingCapturedPosition = null;
                             }
 
                             // 清除选择状态
@@ -1661,6 +1662,7 @@
             if (shouldClearRowColumn) {
                 clearRowAndColumn(x, y);
                 kingCaptured = false; // 重置状态
+                kingCapturedPosition = null;
             }
 
             // 增加移动计数
