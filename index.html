@@ -962,49 +962,98 @@
                 // 检查是否可以吃掉敌方棋子
                 const targetPiece = pieces.find(p => p !== car && p.x === move.x && p.y === move.y);
                 if (targetPiece) {
-                    // 吃子得分，根据棋子类型加分
+                    // 吃子得分，根据棋子类型加分，特别重视将
                     switch (targetPiece.type) {
-                        case 'pawn': score += 10; break;
-                        case 'knight': score += 30; break;
-                        case 'cannon': score += 40; break;
-                        case 'bishop': score += 30; break;
-                        case 'advisor': score += 20; break;
-                        case 'king': score += 100; break;
-                        case 'rook': score += 50; break;
+                        case 'king': score += 1000; break;  // 大幅提高吃将的优先级
+                        case 'rook': score += 70; break;    // 提高吃车的优先级
+                        case 'cannon': score += 60; break;  // 提高吃炮的优先级
+                        case 'knight': score += 50; break;  // 提高吃马的优先级
+                        case 'bishop': score += 40; break;
+                        case 'advisor': score += 30; break;
+                        case 'pawn': score += 20; break;
                     }
                 }
-
-                // 移动后可以攻击的棋子数量
-                const attackablePieces = pieces.filter(p => {
-                    if (p === car) return false;
-                    // 检查移动后是否能攻击到该棋子
-                    return isValidCarMove(move.x, move.y, p.x, p.y);
-                }).length;
-
-                // 根据能攻击的棋子数量加分
-                score += attackablePieces * 5;
-
-                // 避免靠近棋盘边缘
-                if (move.x === 1 || move.x === 8) score -= 2;
-                if (move.y === 1 || move.y === 9) score -= 2;
-
-                // 优先考虑棋盘中央位置
-                score += (5 - Math.abs(move.x - 4.5)) + (5 - Math.abs(move.y - 5));
-
-                return { ...move, score };
+                
+                // 计算各个方向可吃到的棋子数量
+                const capturablePiecesMap = countCapturablePiecesInAllDirections(move.x, move.y);
+                const totalCapturablePieces = capturablePiecesMap.total;
+                
+                // 根据可吃棋子数量加分
+                score += totalCapturablePieces * 15;
+                
+                // 如果吃将后下一步可以消除更多棋子，额外加分
+                if (targetPiece && targetPiece.type === 'king') {
+                    // 找出消除效果最好的下一步位置
+                    const bestClearPosition = findBestPositionAfterEatingKing(car.x, car.y, move.x, move.y);
+                    if (bestClearPosition) {
+                        score += bestClearPosition.score * 0.7;  // 将下一步可能的收益计入当前评分
+                    }
+                }
+                
+                // 优先考虑能保持灵活性的位置（棋盘中央）
+                const centerDistanceX = Math.abs(move.x - 4.5);
+                const centerDistanceY = Math.abs(move.y - 5);
+                const centerScore = (4 - centerDistanceX) + (4 - centerDistanceY);
+                score += centerScore;
+                
+                return { 
+                    ...move, 
+                    score, 
+                    capturableCount: totalCapturablePieces,
+                    capturablePiecesMap  // 保存各方向可吃子数据用于展示
+                };
             });
 
             // 按评分排序，选择最佳移动
             scoredMoves.sort((a, b) => b.score - a.score);
             const bestMove = scoredMoves[0];
 
+            // 查找是否有能直接吃子的走法
+            const directCaptureMove = scoredMoves.find(m => 
+                pieces.some(p => p.type !== 'car' && p.x === m.x && p.y === m.y)
+            );
+            
+            // 查找可吃子最多的走法
+            const maxCapturableMove = [...scoredMoves].sort((a, b) => b.capturableCount - a.capturableCount)[0];
+
             // 更新结果区域
             let moveDescription = "";
             const targetPiece = pieces.find(p => p !== car && p.x === bestMove.x && p.y === bestMove.y);
+            
             if (targetPiece) {
                 moveDescription = `<strong>吃掉${getPieceSymbol(targetPiece.type)}</strong>在坐标(${bestMove.x}, ${bestMove.y})`;
+                if (targetPiece.type === 'king') {
+                    moveDescription += "，下一步可消除行列上的棋子";
+                }
             } else {
                 moveDescription = `移动到坐标(${bestMove.x}, ${bestMove.y})`;
+                if (bestMove.capturableCount > 0) {
+                    moveDescription += `，该位置可以威胁到${bestMove.capturableCount}个棋子`;
+                }
+            }
+            
+            // 计算各个方向可吃到的棋子
+            const directionInfo = [];
+            if (bestMove.capturablePiecesMap) {
+                if (bestMove.capturablePiecesMap.left > 0) 
+                    directionInfo.push(`左：${bestMove.capturablePiecesMap.left}个`);
+                if (bestMove.capturablePiecesMap.right > 0) 
+                    directionInfo.push(`右：${bestMove.capturablePiecesMap.right}个`);
+                if (bestMove.capturablePiecesMap.up > 0) 
+                    directionInfo.push(`上：${bestMove.capturablePiecesMap.up}个`);
+                if (bestMove.capturablePiecesMap.down > 0) 
+                    directionInfo.push(`下：${bestMove.capturablePiecesMap.down}个`);
+            }
+            
+            let directCaptureInfo = "";
+            if (directCaptureMove && directCaptureMove !== bestMove) {
+                const captureTarget = pieces.find(p => p.type !== 'car' && p.x === directCaptureMove.x && p.y === directCaptureMove.y);
+                directCaptureInfo = `<p>可直接吃子: (${directCaptureMove.x}, ${directCaptureMove.y}) 的 ${getPieceSymbol(captureTarget.type)}</p>`;
+            }
+            
+            let maxCapturableInfo = "";
+            if (maxCapturableMove !== bestMove) {
+                maxCapturableInfo = `<p>最多威胁棋子: (${maxCapturableMove.x}, ${maxCapturableMove.y}) 可威胁 ${maxCapturableMove.capturableCount} 个棋子</p>`;
             }
 
             resultArea.innerHTML = `
@@ -1012,6 +1061,9 @@
                 <p>建议: ${moveDescription}</p>
                 <p>评分: ${bestMove.score.toFixed(1)}</p>
                 <p>可选移动: ${safeMoves.length}个安全位置</p>
+                ${directionInfo.length > 0 ? `<p>各方向威胁: ${directionInfo.join('、')}</p>` : ''}
+                ${directCaptureInfo}
+                ${maxCapturableInfo}
             `;
 
             // 高亮显示最佳移动位置
@@ -1020,6 +1072,131 @@
             if (bestCell) {
                 bestCell.classList.add('move-suggestion');
             }
+            
+            // 如果有其他有价值的移动，也高亮显示
+            if (directCaptureMove && directCaptureMove !== bestMove) {
+                const captureCell = findCell(directCaptureMove.x, directCaptureMove.y);
+                if (captureCell) captureCell.classList.add('move-suggestion');
+            }
+            
+            if (maxCapturableMove && maxCapturableMove !== bestMove && maxCapturableMove !== directCaptureMove) {
+                const maxCell = findCell(maxCapturableMove.x, maxCapturableMove.y);
+                if (maxCell) maxCell.classList.add('move-suggestion');
+            }
+        }
+        
+        // 计算所有方向可以威胁到的棋子数量
+        function countCapturablePiecesInAllDirections(x, y) {
+            const result = {
+                left: 0,
+                right: 0,
+                up: 0,
+                down: 0,
+                total: 0
+            };
+            
+            // 检查左边
+            for (let i = x - 1; i >= 1; i--) {
+                if (pieces.some(p => p.x === i && p.y === y)) {
+                    result.left++;
+                    break;
+                }
+            }
+            
+            // 检查右边
+            for (let i = x + 1; i <= 8; i++) {
+                if (pieces.some(p => p.x === i && p.y === y)) {
+                    result.right++;
+                    break;
+                }
+            }
+            
+            // 检查上面
+            for (let i = y - 1; i >= 1; i--) {
+                if (pieces.some(p => p.x === x && p.y === i)) {
+                    result.up++;
+                    break;
+                }
+            }
+            
+            // 检查下面
+            for (let i = y + 1; i <= 9; i++) {
+                if (pieces.some(p => p.x === x && p.y === i)) {
+                    result.down++;
+                    break;
+                }
+            }
+            
+            result.total = result.left + result.right + result.up + result.down;
+            return result;
+        }
+        
+        // 找出吃掉将后，下一步可以最大化消除效果的位置
+        function findBestPositionAfterEatingKing(carX, carY, kingX, kingY) {
+            // 假设车已经吃掉了将
+            const simulatedPieces = [...pieces.filter(p => !(p.x === kingX && p.y === kingY))];
+            const carIndex = simulatedPieces.findIndex(p => p.type === 'car');
+            if (carIndex >= 0) {
+                simulatedPieces[carIndex].x = kingX;
+                simulatedPieces[carIndex].y = kingY;
+            }
+            
+            let bestPosition = null;
+            let maxPiecesCleared = 0;
+            
+            // 检查所有可以移动到的位置
+            for (let x = 1; x <= 8; x++) {
+                for (let y = 1; y <= 9; y++) {
+                    // 跳过当前位置
+                    if (x === kingX && y === kingY) continue;
+                    
+                    // 检查是否可以从吃将位置移动到这个位置
+                    if (!isPathBlockedInPieces(simulatedPieces, kingX, kingY, x, y)) {
+                        // 计算这个位置可以消除多少棋子
+                        let clearCount = 0;
+                        simulatedPieces.forEach(p => {
+                            if (p.type !== 'car' && (p.x === x || p.y === y)) {
+                                clearCount++;
+                            }
+                        });
+                        
+                        if (clearCount > maxPiecesCleared) {
+                            maxPiecesCleared = clearCount;
+                            bestPosition = {x, y, score: clearCount * 20}; // 假定每个棋子价值20分
+                        }
+                    }
+                }
+            }
+            
+            return bestPosition;
+        }
+        
+        // 检查自定义棋子集合中的路径是否被阻塞
+        function isPathBlockedInPieces(piecesList, fromX, fromY, toX, toY) {
+            // 如果不是直线移动，返回true
+            if (fromX !== toX && fromY !== toY) return true;
+            
+            if (fromX === toX) {
+                // 垂直移动
+                const minY = Math.min(fromY, toY);
+                const maxY = Math.max(fromY, toY);
+                for (let y = minY + 1; y < maxY; y++) {
+                    if (piecesList.some(p => p.x === fromX && p.y === y)) {
+                        return true;
+                    }
+                }
+            } else {
+                // 水平移动
+                const minX = Math.min(fromX, toX);
+                const maxX = Math.max(fromX, toX);
+                for (let x = minX + 1; x < maxX; x++) {
+                    if (piecesList.some(p => p.x === x && p.y === fromY)) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
         }
 
         // 检查棋子是否可以攻击到指定位置
