@@ -1347,13 +1347,11 @@ function moveCarTo(x, y) {
 		// 保存移动后的棋盘状态
 		saveBoardState();
 
-		// 根据移动步数，可能需要增加新棋子
-		if (moveCount % 3 === 0) {
-				addRandomPieces();
-		} else {
-				// 可能需要调整某个棋子的位置
-				maybeMovePiece();
-		}
+		// 仅计算和显示，不自动移动棋子
+		setTimeout(() => {
+				calculateBestMoveForCar();
+				markDangerZones();
+		}, 500);
 
 		// 重新渲染棋盘
 		renderPieces();
@@ -1431,7 +1429,7 @@ function maybeMovePiece() {
 
 								gameStatus.textContent = `${getPieceSymbol(pieceToMove.type)}从(${oldX},${oldY})移动到了(${newPosition.x},${newPosition.y})`;
 
-								// 其他棋子移动后重新计算
+								// 其他棋子移动后只重新计算建议和标记危险区域，不自动移动车
 								setTimeout(() => {
 										calculateBestMoveForCar();
 										markDangerZones();
@@ -1652,7 +1650,7 @@ document.getElementById('addPiece').addEventListener('click', () => {
 
 		gameStatus.textContent = `添加了 ${getPieceSymbol(type)} 在坐标 (${x}, ${y})`;
 
-		// 添加棋子后重新计算最佳移动和危险区域
+		// 添加棋子后重新计算最佳移动和危险区域，但不自动移动车车
 		setTimeout(() => {
 				calculateBestMoveForCar();
 				markDangerZones();
